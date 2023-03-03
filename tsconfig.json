@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "esnext",
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "outDir": "lib",
+        "strict": true,
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "lib": [
+            "ES2021.String",
+            "dom"
+        ]
+    },
+    "include": [
+        "src/**/*.ts",
+    ],
+    "exclude": [
+        "node_modules",
+        "lib"
+    ]
+}
