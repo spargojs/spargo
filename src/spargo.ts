@@ -1,14 +1,14 @@
 import { nanoid } from 'nanoid';
 
-type ignisElement = {
+type spargoElement = {
     id: string,
     element: Element,
     childNodes: { type: string, textContent: string | null }[],
     object: Object
 }
 
-export class Ignis {
-    elements: ignisElement[] = [];
+export class Spargo {
+    elements: spargoElement[] = [];
 
     constructor() {
         this.initialize();
@@ -33,13 +33,13 @@ export class Ignis {
         /**
          * If the element already exists, ignore.
          */
-        if (element.getAttribute('ignis-id')) {
+        if (element.getAttribute('spargo-id')) {
             return;
         }
 
         const id = nanoid();
 
-        element.setAttribute('ignis-id', id); // attach a unique id to the element
+        element.setAttribute('spargo-id', id); // attach a unique id to the element
 
         /**
          * element.getAttribute('ignite') - implicitly any
@@ -117,7 +117,7 @@ export class Ignis {
         this.updateElementText(element);
     }
 
-    updateElementText(element: ignisElement) {
+    updateElementText(element: spargoElement) {
         /**
          * We must grab all the child nodes, as they may or may not have synced text to update
          */
