@@ -2,8 +2,7 @@ import { nanoid } from 'nanoid';
 
 type spargoElement = {
     id: string,
-    element: Element,
-    childNodes: { type: string, textContent: string | null }[],
+    domElement: Element,
     object: Object
 }
 
@@ -15,7 +14,7 @@ export class Spargo {
 
         this.updateAllText();
 
-        this.showAll(this.elements.map((element) => element.element));
+        this.showAll(this.elements.map((element) => element.domElement));
 
         // TODO: Create listener for popstate to re-initialize and update synced text
     }
@@ -88,7 +87,7 @@ export class Spargo {
         const object: any = (window[element.getAttribute('ignite')])();
 
         // push into this.elements
-        this.elements.push({ id, element, childNodes: Array.from(element.childNodes).map((childNode) => { return { type: childNode.nodeName, textContent: childNode.textContent } }), object });
+        this.elements.push({ id, domElement: element, object });
 
         // attach listeners to the appropriate element children
         this.attachListeners(element, id);
@@ -184,25 +183,24 @@ export class Spargo {
      * @returns void
      */
     updateElementText(element: spargoElement): void {
-        /**
-         * We must grab all the child nodes, as they may or may not have synced text to update
-         */
-        const childrenToUpdate = Array.from(element.element.childNodes);
+        element.domElement.childNodes.forEach((childNode) => {
+            /**
+             * Typescript does not believe that attributes exists on type ChildNode
+             */
+            const attributes = (childNode as any).attributes;
 
-        element.childNodes.forEach((childNode: { type: string, textContent: string | null }, index: number) => {
-            if (childNode.type === '#text') { // update text nodes
-                const textToReplace = childNode.textContent?.match(/\{{([^{}]+)\}}/mg); // synced text to be replaced
+            if (attributes) {
+                /**
+                 * any is needed since it is used above
+                 */
+                let containsSync: any = Array.from(attributes).find((attribute: any) => attribute.name === '@text');
 
-                let newTextContent = childNode.textContent;
-
-                textToReplace?.forEach((text: any) => {
+                if (containsSync) {
                     /**
-                     * Replace the synced text with the appropriate piece of state
+                     * Typescript does not believe that textContent exists on containsSync, when it does
                      */
-                    newTextContent = newTextContent?.replaceAll(text, (element as any).object[text.replace(/[{}\s]/mg, '') as any]) as any;
-                });
-
-                childrenToUpdate[index].textContent = newTextContent;
+                    childNode.textContent = (element as any).object[containsSync.textContent as any];
+                }
             }
         });
     }

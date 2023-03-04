@@ -24,6 +24,8 @@ A little sneak peak:
 
 <head>
     <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy"
+        content="script-src 'nonce-jFdn249Fnwelk429Df932jS3U2' 'self' data:; default-src 'self';">
     <title>Spargo Test</title>
     <script type="module" src="app.js"></script>
 </head>
@@ -31,17 +33,19 @@ A little sneak peak:
 <body>
     <div ignite="home">
         <input type="text" @sync="message" />
-        This is it: {{ message }}
+        <span @text="message"></span>
     </div>
 
     <div ignite="foo">
         <input type="text" @sync="fun" />
-        {{ fun }}
+        <input type="text" @sync="again" />
+        <span @text="fun"></span>
+        <span @text="again"></span>
     </div>
 </body>
 
 </html>
-<script>
+<script nonce="jFdn249Fnwelk429Df932jS3U2">
     function home() {
         return {
             message: 'hello world',
@@ -54,6 +58,7 @@ A little sneak peak:
     function foo() {
         return {
             fun: 'bar',
+            again: 'sweet',
             ignited() {
                 console.log(this.fun);
             },
