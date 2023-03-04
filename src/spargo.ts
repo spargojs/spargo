@@ -2,8 +2,7 @@ import { nanoid } from 'nanoid';
 
 type spargoElement = {
     id: string,
-    element: Element,
-    childNodes: { type: string, textContent: string | null }[],
+    domElement: Element,
     object: Object
 }
 
@@ -15,10 +14,15 @@ export class Spargo {
 
         this.updateAllText();
 
+        this.showAll(this.elements.map((element) => element.domElement));
+
         // TODO: Create listener for popstate to re-initialize and update synced text
     }
 
-    initialize() {
+    /**
+     * @returns void
+     */
+    initialize(): void {
         /**
          * We will grab all the elements that are to be reactive
          */
@@ -27,9 +31,40 @@ export class Spargo {
         elements.forEach((element) => {
             this.createElement(element);
         });
+
+        this.hideAll(elements);
     }
 
-    createElement(element: Element) {
+    /**
+     * We will hide all the elements until they are fully initialized
+     * 
+     * @param elements 
+     * @returns void
+     */
+    hideAll(elements: NodeListOf<Element>): void {
+        elements.forEach((element) => {
+            element.setAttribute('hidden', 'true');
+        });
+    }
+
+    /**
+     * We will show all the elements when they are fully initialized
+     * 
+     * @param elements 
+     */
+    showAll(elements: Element[]): void {
+        elements.forEach((element) => {
+            element.removeAttribute('hidden');
+        });
+    }
+
+    /**
+     * We will create a new element after we find it
+     * 
+     * @param element 
+     * @returns void
+     */
+    createElement(element: Element): void {
         /**
          * If the element already exists, ignore.
          */
@@ -52,7 +87,7 @@ export class Spargo {
         const object: any = (window[element.getAttribute('ignite')])();
 
         // push into this.elements
-        this.elements.push({ id, element, childNodes: Array.from(element.childNodes).map((childNode) => { return { type: childNode.nodeName, textContent: childNode.textContent } }), object });
+        this.elements.push({ id, domElement: element, object });
 
         // attach listeners to the appropriate element children
         this.attachListeners(element, id);
@@ -61,7 +96,14 @@ export class Spargo {
         object.ignited();
     }
 
-    attachListeners(element: Element, id: string) {
+    /**
+     * Attach a listener to all the appropriate child nodes
+     * 
+     * @param element 
+     * @param id 
+     * @returns void
+     */
+    attachListeners(element: Element, id: string): void {
         const index = this.elements.findIndex(element => element.id === id);
 
         Array.from(element.children).forEach((childNode: Element) => {
@@ -88,7 +130,16 @@ export class Spargo {
         });
     }
 
-    updateObject(id: string, index: number, sync: string, value: string) {
+    /**
+     * We have to update the state for the given element whenever an appropriate event occurs
+     * 
+     * @param id 
+     * @param index 
+     * @param sync 
+     * @param value 
+     * @returns void
+     */
+    updateObject(id: string, index: number, sync: string, value: string): void {
         /**
          * Update the state to the given value
          */
@@ -102,14 +153,22 @@ export class Spargo {
 
     /**
      * Update all the synced text on the screen
+     * 
+     * @returns void
      */
-    updateAllText() {
+    updateAllText(): void {
         this.elements.forEach((element) => {
             this.updateElementText(element);
         });
     }
 
-    updateTextById(id: string) {
+    /**
+     * We will update the synced text of the given elements id
+     * 
+     * @param id 
+     * @returns void
+     */
+    updateTextById(id: string): void {
         const index = this.elements.findIndex(element => element.id === id);
 
         const element = this.elements[index];
@@ -117,22 +176,31 @@ export class Spargo {
         this.updateElementText(element);
     }
 
-    updateElementText(element: spargoElement) {
-        /**
-         * We must grab all the child nodes, as they may or may not have synced text to update
-         */
-        const childrenToUpdate = Array.from(element.element.childNodes);
+    /**
+     * We will update the synced text of the given element
+     * 
+     * @param element 
+     * @returns void
+     */
+    updateElementText(element: spargoElement): void {
+        element.domElement.childNodes.forEach((childNode) => {
+            /**
+             * Typescript does not believe that attributes exists on type ChildNode
+             */
+            const attributes = (childNode as any).attributes;
 
-        element.childNodes.forEach((childNode: { type: string, textContent: string | null }, index: number) => {
-            if (childNode.type === '#text') { // update text nodes
-                const textToReplace = childNode.textContent?.match(/\{{([^{}]+)\}}/mg); // synced text to be replaced
+            if (attributes) {
+                /**
+                 * any is needed since it is used above
+                 */
+                let containsSync: any = Array.from(attributes).find((attribute: any) => attribute.name === '@text');
 
-                textToReplace?.forEach((text: any) => {
+                if (containsSync) {
                     /**
-                     * Replace the synced text with the appropriate piece of state
+                     * Typescript does not believe that textContent exists on containsSync, when it does
                      */
-                    childrenToUpdate[index].textContent = childNode.textContent?.replaceAll(text, (element as any).object[text.replace(/[{}\s]/mg, '') as any]) as any;
-                });
+                    childNode.textContent = (element as any).object[containsSync.textContent as any];
+                }
             }
         });
     }
