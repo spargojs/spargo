@@ -8,7 +8,7 @@ Spargo has many meanings: awesome, sprinkle, practicality, etc. We believe all o
 
 ## Version
 
-Right now, it is in pre-alpha. Most expected features are not finished. Once it is in alpha, it will be pushed up into NPM and made publicly available.
+Right now, it is in pre-alpha. Most expected features are not finished.
 
 ## Docs
 

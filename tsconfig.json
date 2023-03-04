@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
-        "target": "es5",
-        "module": "esnext",
+        "target": "es2016",
+        "module": "commonjs",
         "declaration": true,
         "declarationMap": true,
         "sourceMap": true,
@@ -20,6 +20,7 @@
     ],
     "exclude": [
         "node_modules",
-        "lib"
+        "lib",
+        "**/*.test.ts"
     ]
 }

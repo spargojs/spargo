@@ -1,18 +1,20 @@
 {
-  "name": "spargo",
+  "name": "spargojs",
   "version": "0.0.1",
-  "description": "",
+  "description": "A lightweight Javascript framework for inserting a little reactivity into some markup.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
-    "lib"
+    "lib/*"
   ],
   "scripts": {
-    "prepublish": "tsc"
+    "delete-lib": "del-cli --force ./lib",
+    "prepare": "npm run delete-lib && node build.js",
+    "start": "npm run delete-lib && npx tsc -w"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SPFxAppDev/ts-utility.git"
+    "url": "git+https://github.com/spargojs/spargo.git"
   },
   "keywords": [
     "typescript"
@@ -20,14 +22,18 @@
   "author": "Justin Werner",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/SPFxAppDev/ts-utility/issues"
+    "url": "https://github.com/spargojs/spargo/issues"
   },
-  "homepage": "https://github.com/SPFxAppDev/ts-utility#readme",
+  "homepage": "https://github.com/spargojs/spargo#readme",
   "devDependencies": {
     "@types/node": "^18.14.2",
+    "del-cli": "^5.0.0",
+    "npm-dts": "^1.3.12",
     "typescript": "^4.9.5"
   },
   "dependencies": {
+    "esbuild": "0.17.11",
     "nanoid": "^4.0.1"
-  }
+  },
+  "peerDependencies": {}
 }
