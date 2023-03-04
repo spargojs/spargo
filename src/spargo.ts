@@ -15,10 +15,15 @@ export class Spargo {
 
         this.updateAllText();
 
+        this.showAll(this.elements.map((element) => element.element));
+
         // TODO: Create listener for popstate to re-initialize and update synced text
     }
 
-    initialize() {
+    /**
+     * @returns void
+     */
+    initialize(): void {
         /**
          * We will grab all the elements that are to be reactive
          */
@@ -27,9 +32,40 @@ export class Spargo {
         elements.forEach((element) => {
             this.createElement(element);
         });
+
+        this.hideAll(elements);
     }
 
-    createElement(element: Element) {
+    /**
+     * We will hide all the elements until they are fully initialized
+     * 
+     * @param elements 
+     * @returns void
+     */
+    hideAll(elements: NodeListOf<Element>): void {
+        elements.forEach((element) => {
+            element.setAttribute('hidden', 'true');
+        });
+    }
+
+    /**
+     * We will show all the elements when they are fully initialized
+     * 
+     * @param elements 
+     */
+    showAll(elements: Element[]): void {
+        elements.forEach((element) => {
+            element.removeAttribute('hidden');
+        });
+    }
+
+    /**
+     * We will create a new element after we find it
+     * 
+     * @param element 
+     * @returns void
+     */
+    createElement(element: Element): void {
         /**
          * If the element already exists, ignore.
          */
@@ -61,7 +97,14 @@ export class Spargo {
         object.ignited();
     }
 
-    attachListeners(element: Element, id: string) {
+    /**
+     * Attach a listener to all the appropriate child nodes
+     * 
+     * @param element 
+     * @param id 
+     * @returns void
+     */
+    attachListeners(element: Element, id: string): void {
         const index = this.elements.findIndex(element => element.id === id);
 
         Array.from(element.children).forEach((childNode: Element) => {
@@ -88,7 +131,16 @@ export class Spargo {
         });
     }
 
-    updateObject(id: string, index: number, sync: string, value: string) {
+    /**
+     * We have to update the state for the given element whenever an appropriate event occurs
+     * 
+     * @param id 
+     * @param index 
+     * @param sync 
+     * @param value 
+     * @returns void
+     */
+    updateObject(id: string, index: number, sync: string, value: string): void {
         /**
          * Update the state to the given value
          */
@@ -102,14 +154,22 @@ export class Spargo {
 
     /**
      * Update all the synced text on the screen
+     * 
+     * @returns void
      */
-    updateAllText() {
+    updateAllText(): void {
         this.elements.forEach((element) => {
             this.updateElementText(element);
         });
     }
 
-    updateTextById(id: string) {
+    /**
+     * We will update the synced text of the given elements id
+     * 
+     * @param id 
+     * @returns void
+     */
+    updateTextById(id: string): void {
         const index = this.elements.findIndex(element => element.id === id);
 
         const element = this.elements[index];
@@ -117,7 +177,13 @@ export class Spargo {
         this.updateElementText(element);
     }
 
-    updateElementText(element: spargoElement) {
+    /**
+     * We will update the synced text of the given element
+     * 
+     * @param element 
+     * @returns void
+     */
+    updateElementText(element: spargoElement): void {
         /**
          * We must grab all the child nodes, as they may or may not have synced text to update
          */
@@ -127,12 +193,16 @@ export class Spargo {
             if (childNode.type === '#text') { // update text nodes
                 const textToReplace = childNode.textContent?.match(/\{{([^{}]+)\}}/mg); // synced text to be replaced
 
+                let newTextContent = childNode.textContent;
+
                 textToReplace?.forEach((text: any) => {
                     /**
                      * Replace the synced text with the appropriate piece of state
                      */
-                    childrenToUpdate[index].textContent = childNode.textContent?.replaceAll(text, (element as any).object[text.replace(/[{}\s]/mg, '') as any]) as any;
+                    newTextContent = newTextContent?.replaceAll(text, (element as any).object[text.replace(/[{}\s]/mg, '') as any]) as any;
                 });
+
+                childrenToUpdate[index].textContent = newTextContent;
             }
         });
     }
