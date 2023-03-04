@@ -1,5 +1,7 @@
 ## Spargo.js
 
+<p align="center"><img src="/logo_full.png" alt="Spargo.js Logo"></p>
+
 A lightweight Javascript framework for inserting a little reactivity into some markup. It is inspired by [Alpine.js](https://github.com/alpinejs/alpine) (the idea for Spargo, and initial coding, both existed before Alpine.js was first released, but after Alpine.js became public it inspired the development of Spargo).
 
 ## Why Spargo?
@@ -61,6 +63,6 @@ A little sneak peak:
 ```
 
 ## Colors
-#AFACAE
-#987DAF
+#F0EAFE
+#D5B2FA
 #313E5E
