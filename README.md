@@ -59,3 +59,8 @@ A little sneak peak:
     }
 </script>
 ```
+
+## Colors
+#AFACAE
+#987DAF
+#313E5E
