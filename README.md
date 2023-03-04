@@ -1,14 +1,14 @@
-## Ignis.js
+## Spargo.js
 
-A lightweight Javascript framework for inserting a little reactivity into some markup. It is inspired by [Alpine.js](https://github.com/alpinejs/alpine) (the idea for Ignis, and initial coding, both existed before Alpine.js was first released, but after Alpine.js became public it inspired the development of Ignis).
+A lightweight Javascript framework for inserting a little reactivity into some markup. It is inspired by [Alpine.js](https://github.com/alpinejs/alpine) (the idea for Spargo, and initial coding, both existed before Alpine.js was first released, but after Alpine.js became public it inspired the development of Spargo).
 
-## Why Ignis?
+## Why Spargo?
 
-Ignis is Latin for flame - and is designed to add just a little fire to your otherwise boring markup landscape.
+Spargo has many meanings: awesome, sprinkle, practicality, etc. We believe all of these represent a piece of Spargo.js; which is designed to add just a little reactivity to your otherwise boring markup.
 
 ## Version
 
-Right now, it is in pre-alpha. Most expected features are not finished. Once it is in alpha, it will be pushed up into NPM and made publically available.
+Right now, it is in pre-alpha. Most expected features are not finished. Once it is in alpha, it will be pushed up into NPM and made publicly available.
 
 ## Docs
 
@@ -22,7 +22,7 @@ A little sneak peak:
 
 <head>
     <meta charset="utf-8" />
-    <title>Ignis Test</title>
+    <title>Spargo Test</title>
     <script type="module" src="app.js"></script>
 </head>
 
