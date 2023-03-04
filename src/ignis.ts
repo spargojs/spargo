@@ -1,113 +1,137 @@
 import { nanoid } from 'nanoid';
 
-type ignisNode = {
+type ignisElement = {
     id: string,
     element: Element,
-    childNodes: { type: string, textContent: string|null }[],
-    object: Object,
-    render: { original: string }
+    childNodes: { type: string, textContent: string | null }[],
+    object: Object
 }
 
 export class Ignis {
-    nodes: ignisNode[] = [];
+    elements: ignisElement[] = [];
 
     constructor() {
         this.initialize();
 
-        this.updateAllValues();
+        this.updateAllText();
 
-        // Create listener for popstate to re-initialize
+        // TODO: Create listener for popstate to re-initialize and update synced text
     }
 
     initialize() {
-        const nodes = document.querySelectorAll('[ignite]');
+        /**
+         * We will grab all the elements that are to be reactive
+         */
+        const elements = document.querySelectorAll('[ignite]');
 
-        // triage this.nodes against const nodes above???
-
-        // this.nodes = this.nodes.filter((node) => Array.from(nodes).some((_node) => node?.element == _node));
-
-        nodes.forEach((node) => {
-            this.createNode(node);
+        elements.forEach((element) => {
+            this.createElement(element);
         });
     }
 
-    createNode(node: Element) {
-        // if already exists, ignore
-        if (node.getAttribute('ignis-id')) {
+    createElement(element: Element) {
+        /**
+         * If the element already exists, ignore.
+         */
+        if (element.getAttribute('ignis-id')) {
             return;
         }
 
-        // if doesn't exist:
-
-        // attach unique id
         const id = nanoid();
 
-        node.setAttribute('ignis-id', id);
+        element.setAttribute('ignis-id', id); // attach a unique id to the element
 
-        // grab associated object
         /**
-         * node.getAttribute('ignite') - implicitly any
-         * window[node.getAttribute('ignite')])() - typscript
+         * element.getAttribute('ignite') - implicitly any
+         * window[element.getAttribute('ignite')])() - typscript
          * isn't aware this is a method
+         * 
+         * We will grab the javascript object that is associated with the element
          */
         // @ts-ignore:next-line
-        const object: any = (window[node.getAttribute('ignite')])();
+        const object: any = (window[element.getAttribute('ignite')])();
 
-        // push into this.nodes
-        this.nodes.push({ id, element: node, childNodes: Array.from(node.childNodes).map((childNode) => { return { type: childNode.nodeName, textContent: childNode.textContent } }), object, render: { original: node.innerHTML } });
+        // push into this.elements
+        this.elements.push({ id, element, childNodes: Array.from(element.childNodes).map((childNode) => { return { type: childNode.nodeName, textContent: childNode.textContent } }), object });
 
-        // attach listeners
-        this.attachListeners(node, id);
+        // attach listeners to the appropriate element children
+        this.attachListeners(element, id);
 
-        // run ignited method
+        // run the elements ignited method
         object.ignited();
     }
 
-    attachListeners(node: Element, id: string) {
-        const index = this.nodes.findIndex(node => node.id === id);
+    attachListeners(element: Element, id: string) {
+        const index = this.elements.findIndex(element => element.id === id);
 
-        Array.from(node.children).forEach((childNode: Element) => {
+        Array.from(element.children).forEach((childNode: Element) => {
             const sync = childNode.getAttribute('@sync');
 
             if (childNode.nodeName === 'INPUT' && sync) {
-                childNode.setAttribute('value', (this.nodes[index] as any).object[sync]);
+                /**
+                 * Set the value of the input to the piece of state
+                 */
+                childNode.setAttribute('value', (this.elements[index] as any).object[sync]);
 
+                /**
+                 * Attach an input listener
+                 */
                 childNode.addEventListener('input', (event: any) => {
+                    /**
+                     * On input, update the state
+                     */
                     this.updateObject(id, index, sync, event.target?.value);
                 });
             }
+
+            // TODO: Must continue beyond just an input - i.e. select
         });
     }
 
     updateObject(id: string, index: number, sync: string, value: string) {
-        (this.nodes[index] as any).object[sync] = value;
+        /**
+         * Update the state to the given value
+         */
+        (this.elements[index] as any).object[sync] = value;
 
-        this.updateValues(id);
+        /**
+         * Now that the state has been updated, we must update the synced text accordingly
+         */
+        this.updateTextById(id);
     }
 
-    updateAllValues() {
-        this.nodes.forEach((node) => {
-            this.updateNodeValue(node);
+    /**
+     * Update all the synced text on the screen
+     */
+    updateAllText() {
+        this.elements.forEach((element) => {
+            this.updateElementText(element);
         });
     }
 
-    updateValues(id: string) {
-        const index = this.nodes.findIndex(node => node.id === id);
+    updateTextById(id: string) {
+        const index = this.elements.findIndex(element => element.id === id);
 
-        const node = this.nodes[index];
+        const element = this.elements[index];
 
-        this.updateNodeValue(node);
+        this.updateElementText(element);
     }
 
-    updateNodeValue(node: ignisNode) {
-        const childrenToUpdate = Array.from(node.element.childNodes);
+    updateElementText(element: ignisElement) {
+        /**
+         * We must grab all the child nodes, as they may or may not have synced text to update
+         */
+        const childrenToUpdate = Array.from(element.element.childNodes);
 
-        node.childNodes.forEach((childNode: { type: string, textContent: string|null }, index: number) => {
-            if (childNode.type === '#text') {
-                const valuesToReplace = childNode.textContent?.match(/\{{([^{}]+)\}}/mg);
+        element.childNodes.forEach((childNode: { type: string, textContent: string | null }, index: number) => {
+            if (childNode.type === '#text') { // update text nodes
+                const textToReplace = childNode.textContent?.match(/\{{([^{}]+)\}}/mg); // synced text to be replaced
 
-                valuesToReplace?.forEach((value: any) => {
-                    childrenToUpdate[index].textContent = childNode.textContent?.replaceAll(value, (node as any).object[value.replace(/[{}\s]/mg, '') as any]) as any;
+                textToReplace?.forEach((text: any) => {
+                    /**
+                     * Replace the synced text with the appropriate piece of state
+                     */
+                    childrenToUpdate[index].textContent = childNode.textContent?.replaceAll(text, (element as any).object[text.replace(/[{}\s]/mg, '') as any]) as any;
                 });
             }
         });
