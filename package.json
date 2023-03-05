@@ -11,8 +11,8 @@
   ],
   "scripts": {
     "delete-dist": "del-cli --force ./dist",
-    "prepare": "npm run delete-dist && node build.js",
-    "start": "npm run delete-dist && node build.js --watch"
+    "build": "npm run delete-dist && node build.js",
+    "start": "npm run delete-dist && npx tsc --outDir dist -w"
   },
   "repository": {
     "type": "git",
@@ -34,7 +34,7 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
-    "esbuild": "0.8.39",
+    "esbuild": "0.17.11",
     "nanoid": "^4.0.1"
   },
   "peerDependencies": {}

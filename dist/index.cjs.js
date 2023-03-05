@@ -1,37 +1,31 @@
-var __create = Object.create;
+"use strict";
 var __defProp = Object.defineProperty;
-var __getProtoOf = Object.getPrototypeOf;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __markAsModule = (target) => __defProp(target, "__esModule", {value: true});
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
-  __markAsModule(target);
   for (var name in all)
-    __defProp(target, name, {get: all[name], enumerable: true});
+    __defProp(target, name, { get: all[name], enumerable: true });
 };
-var __exportStar = (target, module2, desc) => {
-  __markAsModule(target);
-  if (module2 && typeof module2 === "object" || typeof module2 === "function") {
-    for (let key of __getOwnPropNames(module2))
-      if (!__hasOwnProp.call(target, key) && key !== "default")
-        __defProp(target, key, {get: () => module2[key], enumerable: !(desc = __getOwnPropDesc(module2, key)) || desc.enumerable});
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
   }
-  return target;
+  return to;
 };
-var __toModule = (module2) => {
-  if (module2 && module2.__esModule)
-    return module2;
-  return __exportStar(__defProp(module2 != null ? __create(__getProtoOf(module2)) : {}, "default", {value: module2, enumerable: true}), module2);
-};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // src/index.ts
-__export(exports, {
+var src_exports = {};
+__export(src_exports, {
   Spargo: () => Spargo
 });
+module.exports = __toCommonJS(src_exports);
 
 // src/spargo.ts
-var import_nanoid = __toModule(require("nanoid"));
+var import_nanoid = require("nanoid");
 var Spargo = class {
   constructor() {
     this.elements = [];
@@ -39,6 +33,9 @@ var Spargo = class {
     this.updateAllText();
     this.showAll(this.elements.map((element) => element.domElement));
   }
+  /**
+   * @returns void
+   */
   initialize() {
     const elements = document.querySelectorAll("[ignite]");
     elements.forEach((element) => {
@@ -46,27 +43,51 @@ var Spargo = class {
     });
     this.hideAll(elements);
   }
+  /**
+   * We will hide all the elements until they are fully initialized
+   * 
+   * @param elements 
+   * @returns void
+   */
   hideAll(elements) {
     elements.forEach((element) => {
       element.setAttribute("hidden", "true");
     });
   }
+  /**
+   * We will show all the elements when they are fully initialized
+   * 
+   * @param elements 
+   */
   showAll(elements) {
     elements.forEach((element) => {
       element.removeAttribute("hidden");
     });
   }
+  /**
+   * We will create a new element after we find it
+   * 
+   * @param element 
+   * @returns void
+   */
   createElement(element) {
     if (element.getAttribute("spargo-id")) {
       return;
     }
-    const id = import_nanoid.nanoid();
+    const id = (0, import_nanoid.nanoid)();
     element.setAttribute("spargo-id", id);
     const object = window[element.getAttribute("ignite")]();
-    this.elements.push({id, domElement: element, object});
+    this.elements.push({ id, domElement: element, object });
     this.attachListeners(element, id);
     object.ignited();
   }
+  /**
+   * Attach a listener to all the appropriate child nodes
+   * 
+   * @param element 
+   * @param id 
+   * @returns void
+   */
   attachListeners(element, id) {
     const index = this.elements.findIndex((element2) => element2.id === id);
     Array.from(element.children).forEach((childNode) => {
@@ -80,20 +101,46 @@ var Spargo = class {
       }
     });
   }
+  /**
+   * We have to update the state for the given element whenever an appropriate event occurs
+   * 
+   * @param id 
+   * @param index 
+   * @param sync 
+   * @param value 
+   * @returns void
+   */
   updateObject(id, index, sync, value) {
     this.elements[index].object[sync] = value;
     this.updateTextById(id);
   }
+  /**
+   * Update all the synced text on the screen
+   * 
+   * @returns void
+   */
   updateAllText() {
     this.elements.forEach((element) => {
       this.updateElementText(element);
     });
   }
+  /**
+   * We will update the synced text of the given elements id
+   * 
+   * @param id 
+   * @returns void
+   */
   updateTextById(id) {
     const index = this.elements.findIndex((element2) => element2.id === id);
     const element = this.elements[index];
     this.updateElementText(element);
   }
+  /**
+   * We will update the synced text of the given element
+   * 
+   * @param element 
+   * @returns void
+   */
   updateElementText(element) {
     element.domElement.childNodes.forEach((childNode) => {
       const attributes = childNode.attributes;
@@ -106,3 +153,7 @@ var Spargo = class {
     });
   }
 };
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  Spargo
+});
