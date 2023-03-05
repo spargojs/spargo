@@ -1,5 +1,4 @@
 // src/spargo.ts
-import { nanoid } from "nanoid";
 var Spargo = class {
   constructor() {
     this.elements = [];
@@ -48,7 +47,7 @@ var Spargo = class {
     if (element.getAttribute("spargo-id")) {
       return;
     }
-    const id = nanoid();
+    const id = crypto.randomUUID();
     element.setAttribute("spargo-id", id);
     const object = window[element.getAttribute("ignite")]();
     this.elements.push({ id, domElement: element, object });
@@ -127,6 +126,6 @@ var Spargo = class {
     });
   }
 };
-export {
-  Spargo
-};
+
+// src/index.ts
+new Spargo();

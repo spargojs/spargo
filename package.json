@@ -5,6 +5,7 @@
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
+  "unpkg": "dist/index.min.js",
   "files": [
     "dist/*"
   ],
@@ -33,8 +34,6 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
-    "esbuild": "0.17.11",
-    "nanoid": "^4.0.1"
-  },
-  "peerDependencies": {}
+    "esbuild": "0.17.11"
+  }
 }
