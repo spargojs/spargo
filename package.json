@@ -1,16 +1,18 @@
 {
   "name": "spargojs",
-  "version": "0.0.4",
-  "description": "A lightweight Javascript framework for inserting a little reactivity into some markup.",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "version": "0.0.8",
+  "description": "The lightweight JavaScript framework for inserting a little reactivity into some markup.",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "unpkg": "dist/index.min.js",
+  "types": "dist/index.d.ts",
   "files": [
-    "lib/*"
+    "dist/*"
   ],
   "scripts": {
-    "delete-lib": "del-cli --force ./lib",
-    "prepare": "npm run delete-lib && node build.js",
-    "start": "npm run delete-lib && npx tsc -w"
+    "delete-dist": "del-cli --force ./dist",
+    "build": "npm run delete-dist && node build.js",
+    "start": "npm run delete-dist && node build.js --watch"
   },
   "repository": {
     "type": "git",
