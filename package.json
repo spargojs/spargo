@@ -12,7 +12,7 @@
   "scripts": {
     "delete-dist": "del-cli --force ./dist",
     "build": "npm run delete-dist && node build.js",
-    "start": "npm run delete-dist && npx tsc --outDir dist -w"
+    "start": "npm run delete-dist && node build.js --watch"
   },
   "repository": {
     "type": "git",

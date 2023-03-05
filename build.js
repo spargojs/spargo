@@ -49,9 +49,17 @@ build({
 
 async function build(options) {
   try {
-    return await require('esbuild').build({
-      ...options,
-    });
+    if (process.argv.includes('--watch')) {
+      const ctx = await require('esbuild').context({
+        ...options,
+      });
+
+      return await ctx.watch();
+    } else {
+      return await require('esbuild').build({
+        ...options,
+      });
+    }
   } catch {
     return process.exit(1);
   }
