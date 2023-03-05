@@ -1,5 +1,3 @@
-import { nanoid } from 'nanoid';
-
 type spargoElement = {
     id: string,
     domElement: Element,
@@ -72,7 +70,7 @@ export class Spargo {
             return;
         }
 
-        const id = nanoid();
+        const id = crypto.randomUUID();
 
         element.setAttribute('spargo-id', id); // attach a unique id to the element
 

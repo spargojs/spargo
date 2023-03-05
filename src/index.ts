@@ -1,1 +1,3 @@
-export * from './spargo';
+import { Spargo } from './spargo';
+
+new Spargo();
