@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 var Spargo = class {
   constructor() {
     this.elements = [];
+    this.initialize();
     this.updateAllText();
     this.showAll(this.elements.map((element) => element.domElement));
   }

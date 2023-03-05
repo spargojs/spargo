@@ -10,7 +10,7 @@ export class Spargo {
     elements: spargoElement[] = [];
 
     constructor() {
-        //this.initialize();
+        this.initialize();
 
         this.updateAllText();
 

@@ -13,22 +13,6 @@ const sharedConfig = {
   treeShaking: true
 };
 
-// Intended for CDN
-build({
-  ...sharedConfig,
-  outfile: "dist/index.js",
-  bundle: true,
-  platform: 'browser',
-});
-
-build({
-  ...sharedConfig,
-  outfile: "dist/index.min.js",
-  bundle: true,
-  minify: true,
-  platform: 'browser',
-});
-
 // The ESM one is meant for "import" statements (bundlers and new browsers)
 build({
   ...sharedConfig,
