@@ -26,11 +26,11 @@ export class Spargo {
          */
         const elements = document.querySelectorAll('[ignite]');
 
+        this.hideAll(elements);
+
         elements.forEach((element) => {
             this.createElement(element);
         });
-
-        this.hideAll(elements);
     }
 
     /**
@@ -84,6 +84,10 @@ export class Spargo {
         // @ts-ignore:next-line
         const object: any = (window[element.getAttribute('ignite')])();
 
+        if (!object) {
+            throw new Error(`${element.getAttribute('ignite')} does not exist as a method on the page.`);
+        }
+
         // push into this.elements
         this.elements.push({ id, domElement: element, object });
 
@@ -111,7 +115,13 @@ export class Spargo {
                 /**
                  * Set the value of the input to the piece of state
                  */
-                childNode.setAttribute('value', (this.elements[index] as any).object[sync]);
+                const value = (this.elements[index] as any).object[sync];
+
+                if (!value) {
+                    throw new Error(`${sync} does not exist.`);
+                }
+
+                childNode.setAttribute('value', value);
 
                 /**
                  * Attach an input listener
@@ -138,6 +148,10 @@ export class Spargo {
      * @returns void
      */
     updateObject(id: string, index: number, sync: string, value: string): void {
+        if (!(this.elements[index] as any).object[sync]) {
+            throw new Error(`${sync} does not exist in the object.`);
+        }
+
         /**
          * Update the state to the given value
          */
@@ -194,6 +208,10 @@ export class Spargo {
                 let containsSync: any = Array.from(attributes).find((attribute: any) => attribute.name === '@text');
 
                 if (containsSync) {
+                    if (!(element as any).object[containsSync.textContent as any]) {
+                        throw new Error(`${containsSync.textContent} does not exist in the object.`);
+                    }
+
                     /**
                      * Typescript does not believe that textContent exists on containsSync, when it does
                      */
