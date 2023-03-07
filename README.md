@@ -24,23 +24,44 @@ A little sneak peak:
 
 <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Content-Security-Policy"
-        content="script-src 'nonce-jFdn249Fnwelk429Df932jS3U2' 'self' data:; default-src 'self';">
+        content="script-src 'nonce-jFdn249Fnwelk429Df932jS3U2' 'self' data:; default-src 'self'; style-src https://cdn.tailwindcss.com 'unsafe-inline'">
     <title>Spargo Test</title>
-    <script type="module" src="app.js"></script>
+    <script src="https://unpkg.com/spargojs@0.0.13/dist/index.min.js" nonce="jFdn249Fnwelk429Df932jS3U2" defer></script>
+    <script src="https://cdn.tailwindcss.com" nonce="jFdn249Fnwelk429Df932jS3U2"></script>
 </head>
 
-<body>
-    <div ignite="home">
-        <input type="text" @sync="message" />
-        <span @text="message"></span>
-    </div>
-
-    <div ignite="foo">
-        <input type="text" @sync="fun" />
-        <input type="text" @sync="again" />
-        <span @text="fun"></span>
-        <span @text="again"></span>
+<body class="bg-gray-100 font-sans antialiased">
+    <div class="flex justify-center mt-8" ignite="home">
+        <div class="mr-3">
+            <div class="relative mb-3 xl:w-96">
+                <div class="relative">
+                    <label for="message" class="text-gray-700">
+                        Message
+                    </label>
+                    <input type="text" id="message"
+                        class="rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-stone-600 focus:border-transparent"
+                        name="message" placeholder="Message" @sync="message" />
+                </div>
+            </div>
+            <div>
+                <span class="text-xl ml-1" @text="message"></span>
+            </div>
+        </div>
+        <div>
+            <div class="relative mb-3 xl:w-96">
+                <label for="latin" class="text-gray-700">
+                    Latin
+                </label>
+                <input type="text" id="latin"
+                    class="rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-stone-600 focus:border-transparent"
+                    name="latin" placeholder="Latin" @sync="latin" />
+            </div>
+            <div>
+                <span class="text-xl ml-1" @text="latin"></span>
+            </div>
+        </div>
     </div>
 </body>
 
@@ -49,18 +70,9 @@ A little sneak peak:
     function home() {
         return {
             message: 'hello world',
+            latin: 'dum spiro spero',
             ignited() {
                 console.log(this.message);
-            },
-        }
-    }
-
-    function foo() {
-        return {
-            fun: 'bar',
-            again: 'sweet',
-            ignited() {
-                console.log(this.fun);
             },
         }
     }
