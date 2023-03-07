@@ -5,9 +5,15 @@ new Generator({
   output: 'dist/index.d.ts',
 }).generate();
 
+const drop = ['debugger'];
+
+if (!process.argv.includes('--watch')) {
+  drop.push('console');
+}
+
 const sharedConfig = {
   entryPoints: ["src/index.ts"],
-  drop: ['debugger', 'console'],
+  drop,
   treeShaking: true
 };
 

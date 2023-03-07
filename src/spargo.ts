@@ -1,18 +1,33 @@
+import {
+    init,
+    classModule,
+    propsModule,
+    styleModule,
+    eventListenersModule,
+    h,
+    VNode,
+    VNodeData,
+    toVNode,
+} from "snabbdom";
+
 type spargoElement = {
     id: string,
-    domElement: Element,
+    vNode: VNode,
     object: Object
 }
+
+const patch = init([
+    classModule,
+    propsModule,
+    styleModule,
+    eventListenersModule,
+]);
 
 export class Spargo {
     elements: spargoElement[] = [];
 
     constructor() {
         this.initialize();
-
-        this.updateAllText();
-
-        this.showAll(this.elements.map((element) => element.domElement));
 
         // TODO: Create listener for popstate to re-initialize and update synced text
     }
@@ -26,39 +41,15 @@ export class Spargo {
          */
         const elements = document.querySelectorAll('[ignite]');
 
+        // this.hideAll(elements);
+
         elements.forEach((element) => {
             this.createElement(element);
         });
-
-        this.hideAll(elements);
     }
 
     /**
-     * We will hide all the elements until they are fully initialized
-     * 
-     * @param elements 
-     * @returns void
-     */
-    hideAll(elements: NodeListOf<Element>): void {
-        elements.forEach((element) => {
-            element.setAttribute('hidden', 'true');
-        });
-    }
-
-    /**
-     * We will show all the elements when they are fully initialized
-     * 
-     * @param elements 
-     */
-    showAll(elements: Element[]): void {
-        elements.forEach((element) => {
-            element.removeAttribute('hidden');
-        });
-    }
-
-    /**
-     * We will create a new element after we find it
-     * 
+     * @description Create a new element
      * @param element 
      * @returns void
      */
@@ -70,10 +61,6 @@ export class Spargo {
             return;
         }
 
-        const id = crypto.randomUUID();
-
-        element.setAttribute('spargo-id', id); // attach a unique id to the element
-
         /**
          * element.getAttribute('ignite') - implicitly any
          * window[element.getAttribute('ignite')])() - typscript
@@ -84,122 +71,137 @@ export class Spargo {
         // @ts-ignore:next-line
         const object: any = (window[element.getAttribute('ignite')])();
 
-        // push into this.elements
-        this.elements.push({ id, domElement: element, object });
+        if (!object) {
+            throw new Error(`${element.getAttribute('ignite')} does not exist as a method on the page.`);
+        }
 
-        // attach listeners to the appropriate element children
-        this.attachListeners(element, id);
+        const id = `spargo-${crypto.randomUUID()}`;
+
+        const node = h(id, {}, this.generateVNodes(element.children, object));
+
+        patch(toVNode(element), node);
+
+        // push into this.elements
+        this.elements.push({ id, vNode: node, object });
 
         // run the elements ignited method
         object.ignited();
     }
 
     /**
-     * Attach a listener to all the appropriate child nodes
-     * 
-     * @param element 
-     * @param id 
-     * @returns void
+     * @description Generate snabbdom VNode's from an Element's children
+     * @param children 
+     * @param object 
+     * @returns VNode[]
      */
-    attachListeners(element: Element, id: string): void {
-        const index = this.elements.findIndex(element => element.id === id);
+    private generateVNodes(children: HTMLCollection, object: any): VNode[] {
+        return Array.from(children).map((child: Element) => {
+            const nodeData: VNodeData = {};
 
-        Array.from(element.children).forEach((childNode: Element) => {
-            const sync = childNode.getAttribute('@sync');
+            if (child.nodeName === 'INPUT') {
+                const sync = child.getAttribute('@sync');
 
-            if (childNode.nodeName === 'INPUT' && sync) {
+                if (!sync) {
+                    throw new Error(`It is expected that all input's are synced to a piece of data.`)
+                }
+
                 /**
                  * Set the value of the input to the piece of state
                  */
-                childNode.setAttribute('value', (this.elements[index] as any).object[sync]);
+                const value = object[sync];
 
-                /**
-                 * Attach an input listener
-                 */
-                childNode.addEventListener('input', (event: any) => {
-                    /**
-                     * On input, update the state
-                     */
-                    this.updateObject(id, index, sync, event.target?.value);
-                });
-            }
+                if (!value) {
+                    throw new Error(`${sync} does not exist.`);
+                }
 
-            // TODO: Must continue beyond just an input - i.e. select
-        });
-    }
+                const updateState = (e: Event) => { this.updateState(e) };
 
-    /**
-     * We have to update the state for the given element whenever an appropriate event occurs
-     * 
-     * @param id 
-     * @param index 
-     * @param sync 
-     * @param value 
-     * @returns void
-     */
-    updateObject(id: string, index: number, sync: string, value: string): void {
-        /**
-         * Update the state to the given value
-         */
-        (this.elements[index] as any).object[sync] = value;
+                nodeData.props = { value, sync }
+                nodeData.on = { input: updateState };
+            } else {
+                const textAttribute = child.getAttribute('@text');
 
-        /**
-         * Now that the state has been updated, we must update the synced text accordingly
-         */
-        this.updateTextById(id);
-    }
+                if (textAttribute) {
+                    if (!object[textAttribute]) {
+                        throw new Error(`${textAttribute} does not exist in the object.`);
+                    }
 
-    /**
-     * Update all the synced text on the screen
-     * 
-     * @returns void
-     */
-    updateAllText(): void {
-        this.elements.forEach((element) => {
-            this.updateElementText(element);
-        });
-    }
+                    nodeData.props = { text: textAttribute };
 
-    /**
-     * We will update the synced text of the given elements id
-     * 
-     * @param id 
-     * @returns void
-     */
-    updateTextById(id: string): void {
-        const index = this.elements.findIndex(element => element.id === id);
-
-        const element = this.elements[index];
-
-        this.updateElementText(element);
-    }
-
-    /**
-     * We will update the synced text of the given element
-     * 
-     * @param element 
-     * @returns void
-     */
-    updateElementText(element: spargoElement): void {
-        element.domElement.childNodes.forEach((childNode) => {
-            /**
-             * Typescript does not believe that attributes exists on type ChildNode
-             */
-            const attributes = (childNode as any).attributes;
-
-            if (attributes) {
-                /**
-                 * any is needed since it is used above
-                 */
-                let containsSync: any = Array.from(attributes).find((attribute: any) => attribute.name === '@text');
-
-                if (containsSync) {
-                    /**
-                     * Typescript does not believe that textContent exists on containsSync, when it does
-                     */
-                    childNode.textContent = (element as any).object[containsSync.textContent as any];
+                    return h(child.nodeName, nodeData, object[textAttribute]);
                 }
             }
+
+            return h(child.nodeName, nodeData, child.children.length > 0 ? this.generateVNodes(child.children, object) : []);
         });
+    }
+
+    /**
+     * @description Update the JavaScript state from an event and patch the view accordingly
+     * @param e
+     * @returns void
+     */
+    private updateState(e: Event): void {
+        if (e.target) {
+            const target = (e.target as any);
+
+            const index = this.elements.findIndex(element => element.id === this.findSpargoParentNodeLocalName(target.parentNode));
+
+            if (index < 0) {
+                throw new Error(`Element with id of ${target.parentNode.localName} not found in memory`);
+            }
+
+            const element = this.elements[index];
+
+            const updatedNodeChildren: (string | VNode)[] = this.retrieveNodeChildren(element.vNode.children, element, e);
+
+            if (updatedNodeChildren.length > 0 && element.vNode.sel && element.vNode.data) {
+                const updatedNode = h(element.vNode.sel, element.vNode.data, updatedNodeChildren);
+
+                patch(element.vNode, updatedNode);
+
+                element.vNode = updatedNode;
+            }
+        }
+    }
+
+    /**
+     * @description Generate new snabbdom nodes with updated values and update any necessary JavaScript state
+     * @param nodes 
+     * @param element 
+     * @param e 
+     * @returns (string | VNode)[]
+     */
+    private retrieveNodeChildren(nodes: (string | VNode)[] | undefined, element: spargoElement, e: Event): (string | VNode)[] {
+        return nodes?.map((childNode: string | VNode) => {
+            if (typeof childNode !== 'string' && childNode.children && childNode.children.length > 0) {
+                return h(childNode.sel || '', childNode.data || null, this.retrieveNodeChildren(childNode.children, element, e));
+            } else if (typeof childNode !== 'string' && childNode.data && childNode.data.props && childNode.data.props['sync']) {
+                // update sync value in object
+                (element.object as any)[childNode.data.props['sync']] = (e.target as any).value;
+            } else if (typeof childNode !== 'string' && childNode.data && childNode.data.props && childNode.data.props['text']) {
+                // update text
+                if (childNode.data.props['text'] === (e.target as any).sync) {
+                    return h(childNode.sel || '', childNode.data, (element.object as any)[childNode.data.props['text']]);
+                }
+            }
+
+            return childNode;
+        }) ?? [];
+    }
+
+    /**
+     * @description Hunt down the snabbdom .sel for the given element
+     * @param element 
+     * @returns string
+     */
+    private findSpargoParentNodeLocalName(element: any): string {
+        if (element.localName.includes('spargo-')) {
+            return element.localName;
+        } else if (element.parentNode && element.parentNode.localName.includes('spargo-')) {
+            return element.parentNode.localName;
+        } else {
+            return this.findSpargoParentNodeLocalName(element.parentNode);
+        }
     }
 }
