@@ -8,6 +8,7 @@ import {
     VNode,
     VNodeData,
     toVNode,
+    Classes,
 } from "snabbdom";
 
 type spargoElement = {
@@ -40,8 +41,6 @@ export class Spargo {
          * We will grab all the elements that are to be reactive
          */
         const elements = document.querySelectorAll('[ignite]');
-
-        // this.hideAll(elements);
 
         elements.forEach((element) => {
             this.createElement(element);
@@ -77,14 +76,12 @@ export class Spargo {
 
         const id = `spargo-${crypto.randomUUID()}`;
 
-        const node = h(id, {}, this.generateVNodes(element.children, object));
+        const node = h(id, { class: this.retrieveClasses(element) }, this.generateVNodes(element.childNodes, object));
 
         patch(toVNode(element), node);
 
-        // push into this.elements
         this.elements.push({ id, vNode: node, object });
 
-        // run the elements ignited method
         object.ignited();
     }
 
@@ -92,48 +89,113 @@ export class Spargo {
      * @description Generate snabbdom VNode's from an Element's children
      * @param children 
      * @param object 
-     * @returns VNode[]
+     * @returns (string | VNode)[]
      */
-    private generateVNodes(children: HTMLCollection, object: any): VNode[] {
-        return Array.from(children).map((child: Element) => {
+    private generateVNodes(children: NodeListOf<ChildNode>, object: any): (string | VNode)[] {
+        return Array.from(children).map((child: ChildNode) => {
             const nodeData: VNodeData = {};
 
-            if (child.nodeName === 'INPUT') {
-                const sync = child.getAttribute('@sync');
+            if (child.nodeType === 1) { // Element
+                const childElement = child as Element;
 
-                if (!sync) {
-                    throw new Error(`It is expected that all input's are synced to a piece of data.`)
-                }
+                nodeData.class = this.retrieveClasses(childElement);
 
-                /**
-                 * Set the value of the input to the piece of state
-                 */
-                const value = object[sync];
+                if (childElement.nodeName === 'INPUT') {
+                    const sync = childElement.getAttribute('@sync');
 
-                if (!value) {
-                    throw new Error(`${sync} does not exist.`);
-                }
-
-                const updateState = (e: Event) => { this.updateState(e) };
-
-                nodeData.props = { value, sync }
-                nodeData.on = { input: updateState };
-            } else {
-                const textAttribute = child.getAttribute('@text');
-
-                if (textAttribute) {
-                    if (!object[textAttribute]) {
-                        throw new Error(`${textAttribute} does not exist in the object.`);
+                    if (!sync) {
+                        throw new Error(`It is expected that all input's are synced to a piece of data.`)
                     }
 
-                    nodeData.props = { text: textAttribute };
+                    const value = object[sync];
 
-                    return h(child.nodeName, nodeData, object[textAttribute]);
+                    if (!value) {
+                        throw new Error(`${sync} does not exist.`);
+                    }
+
+                    const updateState = (e: Event) => { this.updateState(e) };
+
+                    nodeData.props = this.generateProps({ value, sync }, childElement);
+                    nodeData.on = { input: updateState };
+                } else {
+                    const textAttribute = childElement.getAttribute('@text');
+
+                    if (textAttribute) {
+                        if (!object[textAttribute]) {
+                            throw new Error(`${textAttribute} does not exist in the object.`);
+                        }
+
+                        nodeData.props = this.generateProps({ text: textAttribute }, childElement);
+
+                        return h(childElement.nodeName, nodeData, object[textAttribute]);
+                    }
+
+                    if (childElement.textContent?.trim() !== '' && childElement.children.length === 0) {
+                        return h(childElement.nodeName, nodeData, childElement.textContent);
+                    }
                 }
+            } else if (child.nodeType === 3) { // Text
+                return child.textContent || '';
             }
 
-            return h(child.nodeName, nodeData, child.children.length > 0 ? this.generateVNodes(child.children, object) : []);
+            return h(child.nodeName, nodeData, child.childNodes.length > 0 ? this.generateVNodes(child.childNodes, object) : []);
         });
+    }
+
+    /**
+     * @description Retrieves the props of the element in the format that snabbdom expects
+     * @param object 
+     * @param element 
+     * @returns Object
+     */
+    private generateProps(object: Object, element: Element): Object {
+        const attributes = [
+            'id',
+            'name',
+            'style',
+            'placeholder',
+            'ref',
+            'href',
+            'src',
+            'target',
+            'aria-label',
+            'disabled',
+            'hidden',
+            'selected',
+            'for',
+            'type'
+        ];
+
+        const expandedObject = {};
+
+        attributes.forEach((attr: string) => {
+            const elementAttr = element.getAttribute(attr);
+
+            if (elementAttr) {
+                (expandedObject as any)[attr] = elementAttr;
+            }
+        });
+
+        return { ...expandedObject, ...object };
+    }
+
+    /**
+     * @description Retrieves the classes of the element in the format that snabbdom expects
+     * @param element 
+     * @returns Classes
+     */
+    private retrieveClasses(element: Element): Classes {
+        const classes = element.getAttribute('class');
+
+        let classesObject = {};
+
+        if (classes) {
+            classes.split(' ').forEach((classString: string) => {
+                (classesObject as any)[classString] = true;
+            });
+        }
+
+        return classesObject;
     }
 
     /**
