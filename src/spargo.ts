@@ -38,7 +38,7 @@ export class Spargo {
      */
     initialize(): void {
         /**
-         * We will grab all the elements that are to be reactive
+         * Grab all the elements that are to be reactive
          */
         const elements = document.querySelectorAll('[ignite]');
 
