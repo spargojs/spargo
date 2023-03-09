@@ -15,7 +15,7 @@
     "test": "cypress run",
     "lint": "npx eslint .",
     "prepublishOnly": "npm run lint && npm run text && npm run build",
-    "preversion": "npm run lint && npm test",
+    "preversion": "npm run lint && npm run test",
     "postversion": "git push && git push --tags"
   },
   "repository": {
