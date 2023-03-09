@@ -13,6 +13,12 @@ if (!process.argv.includes('--watch')) {
   drop.push('console');
 }
 
+const cdnSharedConfig = {
+  entryPoints: ["src/cdn.ts"],
+  drop,
+  treeShaking: true
+};
+
 const sharedConfig = {
   entryPoints: ["src/index.ts"],
   drop,
@@ -21,14 +27,14 @@ const sharedConfig = {
 
 // Intended for CDN
 build({
-  ...sharedConfig,
+  ...cdnSharedConfig,
   outfile: "dist/cdn.js",
   bundle: true,
   platform: 'browser',
 });
 
 build({
-  ...sharedConfig,
+  ...cdnSharedConfig,
   outfile: "dist/cdn.min.js",
   bundle: true,
   minify: true,
