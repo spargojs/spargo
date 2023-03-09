@@ -82,7 +82,9 @@ export class Spargo {
 
         this.elements.push({ id, vNode: node, object });
 
-        object.ignited();
+        if (typeof object.ignited === 'function') {
+            object.ignited();
+        }
     }
 
     /**
