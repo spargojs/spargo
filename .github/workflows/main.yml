@@ -3,7 +3,7 @@ name: Cypress Tests using Cypress Docker Image
 on: [push]
 
 jobs:
-  cypress-run:
+  Tests:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
