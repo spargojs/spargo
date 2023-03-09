@@ -28,7 +28,7 @@ A little sneak peak:
     <meta http-equiv="Content-Security-Policy"
         content="script-src 'nonce-jFdn249Fnwelk429Df932jS3U2' 'self' data:; default-src 'self'; style-src https://cdn.tailwindcss.com 'unsafe-inline'">
     <title>Spargo Test</title>
-    <script src="https://unpkg.com/spargojs@0.0.20/dist/cdn.min.js" nonce="jFdn249Fnwelk429Df932jS3U2" defer></script>
+    <script src="https://unpkg.com/spargojs@0.0.21/dist/cdn.min.js" nonce="jFdn249Fnwelk429Df932jS3U2" defer></script>
     <script src="https://cdn.tailwindcss.com" nonce="jFdn249Fnwelk429Df932jS3U2"></script>
 </head>
 
@@ -42,11 +42,11 @@ A little sneak peak:
                     </label>
                     <input type="text" id="message"
                         class="rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-stone-600 focus:border-transparent"
-                        name="message" placeholder="Message" @0.0.20/>
+                        name="message" placeholder="Message" @0.0.21/>
                 </div>
             </div>
             <div>
-                <span class="text-xl ml-1" @0.0.20/span>
+                <span class="text-xl ml-1" @0.0.21/span>
             </div>
         </div>
         <div>
@@ -56,10 +56,10 @@ A little sneak peak:
                 </label>
                 <input type="text" id="latin"
                     class="rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-stone-600 focus:border-transparent"
-                    name="latin" placeholder="Latin" @0.0.20/>
+                    name="latin" placeholder="Latin" @0.0.21/>
             </div>
             <div>
-                <span class="text-xl ml-1" @0.0.20/span>
+                <span class="text-xl ml-1" @0.0.21/span>
             </div>
         </div>
     </div>
