@@ -20,14 +20,14 @@ const sharedConfig = {
 // Intended for CDN
 build({
   ...sharedConfig,
-  outfile: "dist/index.js",
+  outfile: "dist/cdn.js",
   bundle: true,
   platform: 'browser',
 });
 
 build({
   ...sharedConfig,
-  outfile: "dist/index.min.js",
+  outfile: "dist/cdn.min.js",
   bundle: true,
   minify: true,
   platform: 'browser',
