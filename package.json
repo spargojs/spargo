@@ -12,6 +12,8 @@
   "scripts": {
     "build": "node build.js",
     "start": "node build.js --watch",
+    "release": "node release.js",
+    "patch": "npm version patch && npm run release",
     "test": "cypress run",
     "lint": "npx eslint .",
     "prepublishOnly": "npm run lint && npm run test && npm run build",
