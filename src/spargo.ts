@@ -11,10 +11,13 @@ import {
     Classes,
 } from "snabbdom";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type spargoElementObject = { [key: string]: any, ignited?: ignited };
+
 type spargoElement = {
     id: string,
     vNode: VNode,
-    object: Object
+    object: spargoElementObject
 }
 
 const patch = init([
@@ -23,6 +26,8 @@ const patch = init([
     styleModule,
     eventListenersModule,
 ]);
+
+type ignited = () => void;
 
 export class Spargo {
     elements: spargoElement[] = [];
@@ -67,8 +72,8 @@ export class Spargo {
          * 
          * We will grab the javascript object that is associated with the element
          */
-        // @ts-ignore:next-line
-        const object: any = (window[element.getAttribute('ignite')])();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const object: spargoElementObject = ((window as any)[element.getAttribute('ignite') as string])();
 
         if (!object) {
             throw new Error(`${element.getAttribute('ignite')} does not exist as a method on the page.`);
@@ -93,7 +98,7 @@ export class Spargo {
      * @param object 
      * @returns (string | VNode)[]
      */
-    private generateVNodes(children: NodeListOf<ChildNode>, object: any): (string | VNode)[] {
+    private generateVNodes(children: NodeListOf<ChildNode>, object: spargoElementObject): (string | VNode)[] {
         return Array.from(children).map((child: ChildNode) => {
             const nodeData: VNodeData = {};
 
@@ -148,9 +153,9 @@ export class Spargo {
      * @description Retrieves the props of the element in the format that snabbdom expects
      * @param object 
      * @param element 
-     * @returns Object
+     * @returns object
      */
-    private generateProps(object: Object, element: Element): Object {
+    private generateProps(object: object, element: Element): object {
         const attributes = [
             'id',
             'name',
@@ -168,13 +173,13 @@ export class Spargo {
             'type'
         ];
 
-        const expandedObject = {};
+        const expandedObject: { [key: string]: string } = {};
 
         attributes.forEach((attr: string) => {
             const elementAttr = element.getAttribute(attr);
 
             if (elementAttr) {
-                (expandedObject as any)[attr] = elementAttr;
+                expandedObject[attr] = elementAttr;
             }
         });
 
@@ -189,11 +194,11 @@ export class Spargo {
     private retrieveClasses(element: Element): Classes {
         const classes = element.getAttribute('class');
 
-        let classesObject = {};
+        const classesObject: { [key: string]: boolean } = {};
 
         if (classes) {
             classes.split(' ').forEach((classString: string) => {
-                (classesObject as any)[classString] = true;
+                classesObject[classString] = true;
             });
         }
 
@@ -207,6 +212,7 @@ export class Spargo {
      */
     private updateState(e: Event): void {
         if (e.target) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const target = (e.target as any);
 
             const index = this.elements.findIndex(element => element.id === this.findSpargoParentNodeLocalName(target.parentNode));
@@ -237,16 +243,21 @@ export class Spargo {
      * @returns (string | VNode)[]
      */
     private retrieveNodeChildren(nodes: (string | VNode)[] | undefined, element: spargoElement, e: Event): (string | VNode)[] {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const target = e.target as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const object = element.object as any;
+
         return nodes?.map((childNode: string | VNode) => {
             if (typeof childNode !== 'string' && childNode.children && childNode.children.length > 0) {
                 return h(childNode.sel || '', childNode.data || null, this.retrieveNodeChildren(childNode.children, element, e));
             } else if (typeof childNode !== 'string' && childNode.data && childNode.data.props && childNode.data.props['sync']) {
                 // update sync value in object
-                (element.object as any)[childNode.data.props['sync']] = (e.target as any).value;
+                object[childNode.data.props['sync']] = target.value;
             } else if (typeof childNode !== 'string' && childNode.data && childNode.data.props && childNode.data.props['text']) {
                 // update text
-                if (childNode.data.props['text'] === (e.target as any).sync) {
-                    return h(childNode.sel || '', childNode.data, (element.object as any)[childNode.data.props['text']]);
+                if (childNode.data.props['text'] === target.sync) {
+                    return h(childNode.sel || '', childNode.data, object[childNode.data.props['text']]);
                 }
             }
 
@@ -259,6 +270,7 @@ export class Spargo {
      * @param element 
      * @returns string
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private findSpargoParentNodeLocalName(element: any): string {
         if (element.localName.includes('spargo-')) {
             return element.localName;

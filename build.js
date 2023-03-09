@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/* eslint-disable @typescript-eslint/no-var-requires */
 const { Generator } = require('npm-dts');
 
 new Generator({
@@ -67,4 +69,4 @@ async function build(options) {
   } catch {
     return process.exit(1);
   }
-};
+}
