@@ -14,7 +14,7 @@
     "start": "node build.js --watch",
     "test": "cypress run",
     "lint": "npx eslint .",
-    "prepublishOnly": "npm run lint && npm run text && npm run build",
+    "prepublishOnly": "npm run lint && npm run test && npm run build",
     "preversion": "npm run lint && npm run test",
     "postversion": "git push && git push --tags"
   },
