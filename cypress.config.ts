@@ -5,7 +5,8 @@ export default defineConfig({
   video: false,
 
   e2e: {
-    setupNodeEvents(on, config) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    setupNodeEvents(_on, _config) {
       // implement node event listeners here
     },
   },

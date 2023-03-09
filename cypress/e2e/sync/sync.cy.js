@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 describe('Test @sync', () => {
     beforeEach(() => {
         cy.visit(__dirname + '/spec.html')
