@@ -42,11 +42,11 @@ A little sneak peak:
                     </label>
                     <input type="text" id="message"
                         class="rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-stone-600 focus:border-transparent"
-                        name="message" placeholder="Message" @0.0.23/>
+                        name="message" placeholder="Message" @sync="message"/>
                 </div>
             </div>
             <div>
-                <span class="text-xl ml-1" @0.0.23/span>
+                <span class="text-xl ml-1" @text="message"></span>
             </div>
         </div>
         <div>
@@ -56,10 +56,10 @@ A little sneak peak:
                 </label>
                 <input type="text" id="latin"
                     class="rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-stone-600 focus:border-transparent"
-                    name="latin" placeholder="Latin" @0.0.23/>
+                    name="latin" placeholder="Latin" @sync="latin" />
             </div>
             <div>
-                <span class="text-xl ml-1" @0.0.23/span>
+                <span class="text-xl ml-1" @text="latin"></span>
             </div>
         </div>
     </div>
