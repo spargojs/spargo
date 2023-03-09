@@ -1,6 +1,6 @@
 {
   "name": "spargojs",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "The lightweight JavaScript framework for inserting a little reactivity into some markup.",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
