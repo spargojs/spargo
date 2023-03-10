@@ -9,7 +9,7 @@ readFile('./README.md', function (err, data) {
     }
 
     data = data.toString();
-    data = data.replace(/@(.*?)\//gm, `@${version}/`);
+    data = data.replace(/spargojs@(.*?)\//gm, `spargojs@${version}/`);
 
     writeFile('./README.md', data, function (err) {
         if (err) {
