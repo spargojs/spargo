@@ -14,7 +14,7 @@
     "start": "node build.js --watch",
     "release": "node release.js",
     "patch": "git add . && git commit -m 'patch started' && git push && npm version patch && npm run release && git push",
-    "publish": "npm run publish",
+    "publish": "npm publish",
     "patch-publish": "npm run patch && npm run publish",
     "test": "cypress run",
     "lint": "npx eslint .",
