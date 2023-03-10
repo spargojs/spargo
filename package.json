@@ -14,11 +14,10 @@
     "start": "node build.js --watch",
     "release": "node release.js && git add . && git commit -m 'Updated readme with new relase' && git push",
     "patch": "git add . && git commit -m 'patch started' && git push && npm version patch && npm run release",
-    "publish": "npm publish",
-    "patch-publish": "npm run patch && npm run publish",
+    "patch-publish": "npm run patch && npm publish",
     "test": "cypress run",
     "lint": "npx eslint .",
-    "prepublishOnly": "npm run lint && npm run test && npm run build",
+    "prepublishOnly": "npm run lint && npm run build",
     "preversion": "npm run lint && npm run test",
     "postversion": "git push && git push --tags"
   },
