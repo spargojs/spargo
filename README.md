@@ -28,7 +28,7 @@ A little sneak peak:
     <meta http-equiv="Content-Security-Policy"
         content="script-src 'nonce-jFdn249Fnwelk429Df932jS3U2' 'self' data:; default-src 'self'; style-src https://cdn.tailwindcss.com 'unsafe-inline'">
     <title>Spargo Test</title>
-    <script src="https://unpkg.com/spargojs@0.0.25/dist/cdn.min.js" nonce="jFdn249Fnwelk429Df932jS3U2" defer></script>
+    <script src="https://unpkg.com/spargojs@0.0.26/dist/cdn.min.js" nonce="jFdn249Fnwelk429Df932jS3U2" defer></script>
     <script src="https://cdn.tailwindcss.com" nonce="jFdn249Fnwelk429Df932jS3U2"></script>
 </head>
 
