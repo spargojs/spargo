@@ -102,51 +102,81 @@ export class Spargo {
         return Array.from(children).map((child: ChildNode) => {
             const nodeData: VNodeData = {};
 
-            if (child.nodeType === 1) { // Element
-                const childElement = child as Element;
+            switch (child.nodeType) {
+                case 1: { // Element
+                    const childElement = child as Element;
 
-                nodeData.class = this.retrieveClasses(childElement);
+                    nodeData.class = this.retrieveClasses(childElement);
 
-                if (childElement.nodeName === 'INPUT') {
-                    const sync = childElement.getAttribute('@sync');
+                    console.warn(childElement.nodeName);
 
-                    if (!sync) {
-                        throw new Error(`It is expected that all input's are synced to a piece of data.`)
-                    }
+                    switch (childElement.nodeName) {
+                        case 'INPUT': {
+                            const sync = childElement.getAttribute('@sync');
 
-                    const value = object[sync];
+                            if (!sync) {
+                                throw new Error(`It is expected that all input's are synced to a piece of data.`)
+                            }
 
-                    if (!value) {
-                        throw new Error(`${sync} does not exist.`);
-                    }
+                            const value = object[sync];
 
-                    const updateState = (e: Event) => { this.updateState(e) };
+                            if (!value) {
+                                throw new Error(`${sync} does not exist.`);
+                            }
 
-                    nodeData.props = this.generateProps({ value, sync }, childElement);
-                    nodeData.on = { input: updateState };
-                } else {
-                    const textAttribute = childElement.getAttribute('@text');
+                            const updateState = (e: Event) => { this.updateState(e) };
 
-                    if (textAttribute) {
-                        if (!object[textAttribute]) {
-                            throw new Error(`${textAttribute} does not exist in the object.`);
+                            nodeData.props = this.generateProps({ value, sync }, childElement);
+                            nodeData.on = { input: updateState };
+
+                            return this.generateVNode(child, childElement, object, nodeData);
                         }
 
-                        nodeData.props = this.generateProps({ text: textAttribute }, childElement);
+                        case 'BUTTON': {
+                            return this.generateVNode(child, childElement, object, nodeData);
+                        }
 
-                        return h(childElement.nodeName, nodeData, object[textAttribute]);
-                    }
-
-                    if (childElement.textContent?.trim() !== '' && childElement.children.length === 0) {
-                        return h(childElement.nodeName, nodeData, childElement.textContent);
+                        default:
+                            return this.generateVNode(child, childElement, object, nodeData);
                     }
                 }
-            } else if (child.nodeType === 3) { // Text
-                return child.textContent || '';
+                case 3: // Text
+                    return child.textContent || '';
+
+                default:
+                    return h(child.nodeName, nodeData, child.childNodes.length > 0 ? this.generateVNodes(child.childNodes, object) : []);
+            }
+        });
+    }
+
+    /**
+     * @description Generate a snabbdom vnode
+     * @param child ChildNode
+     * @param childElement Element
+     * @param object spargoElementObject
+     * @param nodeData VNodeData
+     * @returns VNode
+     */
+    private generateVNode(child: ChildNode, childElement: Element, object: spargoElementObject, nodeData: VNodeData): VNode {
+        const textAttribute = childElement.getAttribute('@text');
+
+        if (textAttribute) {
+            if (!object[textAttribute]) {
+                throw new Error(`${textAttribute} does not exist in the object.`);
             }
 
-            return h(child.nodeName, nodeData, child.childNodes.length > 0 ? this.generateVNodes(child.childNodes, object) : []);
-        });
+            nodeData.props = this.generateProps({ text: textAttribute }, childElement);
+
+            return h(childElement.nodeName, nodeData, object[textAttribute]);
+        }
+
+        if (childElement.textContent?.trim() !== '' && childElement.children.length === 0) {
+            nodeData.props = this.generateProps({}, childElement);
+
+            return h(childElement.nodeName, nodeData, childElement.textContent);
+        }
+
+        return h(child.nodeName, nodeData, child.childNodes.length > 0 ? this.generateVNodes(child.childNodes, object) : []);
     }
 
     /**
