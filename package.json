@@ -1,6 +1,6 @@
 {
   "name": "spargojs",
-  "version": "0.0.22",
+  "version": "0.0.30",
   "description": "The lightweight JavaScript framework for inserting a little reactivity into some markup.",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
@@ -12,11 +12,12 @@
   "scripts": {
     "build": "node build.js",
     "start": "node build.js --watch",
-    "release": "node release.js",
-    "patch": "npm version patch && npm run release && git add . && git commit -m 'upated readme with npm patch number' && git push",
+    "release": "node release.js && git add . && git commit -m 'Updated readme with new relase' && git push",
+    "patch": "git add . && git commit -m 'patch started' && git push && npm version patch && npm run release",
+    "patch-publish": "npm run patch && npm publish",
     "test": "cypress run",
     "lint": "npx eslint .",
-    "prepublishOnly": "npm run lint && npm run test && npm run build",
+    "prepublishOnly": "npm run lint && npm run build",
     "preversion": "npm run lint && npm run test",
     "postversion": "git push && git push --tags"
   },

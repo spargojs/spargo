@@ -16,6 +16,7 @@ type spargoElementObject = { [key: string]: any, ignited?: ignited };
 
 type spargoElement = {
     id: string,
+    element: Element,
     vNode: VNode,
     object: spargoElementObject
 }
@@ -85,7 +86,7 @@ export class Spargo {
 
         patch(toVNode(element), node);
 
-        this.elements.push({ id, vNode: node, object });
+        this.elements.push({ id, vNode: node, object, element });
 
         if (typeof object.ignited === 'function') {
             object.ignited();
@@ -102,51 +103,155 @@ export class Spargo {
         return Array.from(children).map((child: ChildNode) => {
             const nodeData: VNodeData = {};
 
-            if (child.nodeType === 1) { // Element
-                const childElement = child as Element;
+            switch (child.nodeType) {
+                case 1: { // Element
+                    const childElement = child as Element;
 
-                nodeData.class = this.retrieveClasses(childElement);
+                    const ifCheck = childElement.getAttribute('@if');
 
-                if (childElement.nodeName === 'INPUT') {
-                    const sync = childElement.getAttribute('@sync');
-
-                    if (!sync) {
-                        throw new Error(`It is expected that all input's are synced to a piece of data.`)
-                    }
-
-                    const value = object[sync];
-
-                    if (!value) {
-                        throw new Error(`${sync} does not exist.`);
-                    }
-
-                    const updateState = (e: Event) => { this.updateState(e) };
-
-                    nodeData.props = this.generateProps({ value, sync }, childElement);
-                    nodeData.on = { input: updateState };
-                } else {
-                    const textAttribute = childElement.getAttribute('@text');
-
-                    if (textAttribute) {
-                        if (!object[textAttribute]) {
-                            throw new Error(`${textAttribute} does not exist in the object.`);
+                    if (ifCheck) {
+                        if (typeof ifCheck === 'function' && !object[ifCheck]()) {
+                            return '';
                         }
 
-                        nodeData.props = this.generateProps({ text: textAttribute }, childElement);
+                        if ((ifCheck.substring(0, 1) === '!' && object[ifCheck.slice(1)]) || !object[ifCheck]) {
+                            return '';
+                        }
 
-                        return h(childElement.nodeName, nodeData, object[textAttribute]);
+                        // TODO: elseif and else
                     }
 
-                    if (childElement.textContent?.trim() !== '' && childElement.children.length === 0) {
-                        return h(childElement.nodeName, nodeData, childElement.textContent);
+                    nodeData.class = this.retrieveClasses(childElement);
+
+                    switch (childElement.nodeName) {
+                        case 'INPUT': {
+                            const sync = childElement.getAttribute('@sync');
+
+                            if (!sync) {
+                                throw new Error(`It is expected that all input's are synced to a piece of data.`)
+                            }
+
+                            const value = object[sync];
+
+                            if (!value) {
+                                throw new Error(`${sync} does not exist.`);
+                            }
+
+                            const updateState = (e: Event) => { this.updateState(e) };
+
+                            nodeData.props = this.generateProps({ value, sync }, childElement);
+                            nodeData.on = { input: updateState };
+
+                            return this.generateVNode(child, childElement, object, nodeData);
+                        }
+
+                        case 'BUTTON': {
+                            const click = childElement.getAttribute('@click');
+
+                            if (click) {
+                                const method = object[click];
+
+                                if (typeof method !== 'function') {
+                                    const methodWithParens = object[click.slice(0, -2)];
+
+                                    if (typeof methodWithParens !== 'function') {
+                                        throw new Error(`${click} was not found as a method`);
+                                    }
+                                }
+
+                                const runFunction = (e: Event) => {
+                                    let index = null;
+
+                                    if (e.target) {
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                        const target = (e.target as any);
+
+                                        index = this.elements.findIndex(element => element.id === this.findSpargoParentNodeLocalName(target.parentNode));
+
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                        (this.elements[index] as any).object[method ? click : click.slice(0, -2)]();
+                                    }
+
+                                    // if the @if is falsy, the element is never transfered to the vdom, so the node must be recreated via the original element
+                                    this.updateStateByElement(e, index);
+                                };
+
+                                nodeData.on = { click: runFunction };
+                            }
+
+                            return this.generateVNode(child, childElement, object, nodeData);
+                        }
+
+                        default:
+                            return this.generateVNode(child, childElement, object, nodeData);
                     }
                 }
-            } else if (child.nodeType === 3) { // Text
-                return child.textContent || '';
+                case 3: // Text
+                    return child.textContent || '';
+
+                default:
+                    return h(child.nodeName, nodeData, child.childNodes.length > 0 ? this.generateVNodes(child.childNodes, object) : []);
+            }
+        });
+    }
+
+    /**
+     * @description Generate a snabbdom vnode
+     * @param child
+     * @param childElement
+     * @param object
+     * @param nodeData
+     * @returns VNode
+     */
+    private generateVNode(child: ChildNode, childElement: Element, object: spargoElementObject, nodeData: VNodeData): VNode {
+        const textNode = this.textNode(childElement, object, nodeData);
+
+        if (textNode) {
+            return textNode;
+        }
+
+        const nodeWithTextContent = this.nodeWithTextContent(childElement, nodeData);
+
+        if (nodeWithTextContent) {
+            return nodeWithTextContent;
+        }
+
+        return h(child.nodeName, nodeData, child.childNodes.length > 0 ? this.generateVNodes(child.childNodes, object) : []);
+    }
+
+    /**
+     * @description Will generate a node with text content
+     * @param childElement
+     * @param nodeData
+     * @returns VNode | undefined
+     */
+    private nodeWithTextContent(childElement: Element, nodeData: VNodeData): VNode | undefined {
+        if (childElement.textContent?.trim() !== '' && childElement.children.length === 0) {
+            nodeData.props = this.generateProps({}, childElement);
+
+            return h(childElement.nodeName, nodeData, childElement.textContent);
+        }
+    }
+
+    /**
+     * @description Will generate a text node if applicable
+     * @param childElement
+     * @param object
+     * @param nodeData
+     * @returns VNode | undefined
+     */
+    private textNode(childElement: Element, object: spargoElementObject, nodeData: VNodeData): VNode | undefined {
+        const textAttribute = childElement.getAttribute('@text');
+
+        if (textAttribute) {
+            if (!object[textAttribute]) {
+                throw new Error(`${textAttribute} does not exist in the object.`);
             }
 
-            return h(child.nodeName, nodeData, child.childNodes.length > 0 ? this.generateVNodes(child.childNodes, object) : []);
-        });
+            nodeData.props = this.generateProps({ text: textAttribute }, childElement);
+
+            return h(childElement.nodeName, nodeData, object[textAttribute]);
+        }
     }
 
     /**
@@ -231,6 +336,39 @@ export class Spargo {
                 patch(element.vNode, updatedNode);
 
                 element.vNode = updatedNode;
+            }
+        }
+    }
+
+    /**
+     * @description Update the JavaScript state from an event and patch the view accordingly via the element
+     * @param e
+     * @param index
+     * @returns void
+     */
+    private updateStateByElement(e: Event, index?: number | null): void {
+        if (e.target) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const target = (e.target as any);
+
+            if (!index) {
+                index = this.elements.findIndex(element => element.id === this.findSpargoParentNodeLocalName(target.parentNode));
+            }
+
+            if (index < 0) {
+                throw new Error(`Element with id of ${target.parentNode.localName} not found in memory`);
+            }
+
+            const spargoElement = this.elements[index];
+
+            const updatedNodeChildren: (string | VNode)[] = this.generateVNodes(spargoElement.element.childNodes, spargoElement.object);
+
+            if (updatedNodeChildren.length > 0 && spargoElement.vNode.sel && spargoElement.vNode.data) {
+                const updatedNode = h(spargoElement.vNode.sel, spargoElement.vNode.data, updatedNodeChildren);
+
+                patch(spargoElement.vNode, updatedNode);
+
+                spargoElement.vNode = updatedNode;
             }
         }
     }
