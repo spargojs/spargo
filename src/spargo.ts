@@ -100,7 +100,7 @@ export class Spargo {
      * @returns (string | VNode)[]
      */
     private generateVNodes(children: NodeListOf<ChildNode>, object: spargoElementObject): (string | VNode)[] {
-        let ifData = {
+        const ifData = {
             ifIsFalse: false,
             elseIfIsFalse: false,
         };
