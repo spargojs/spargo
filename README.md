@@ -42,8 +42,22 @@ A little sneak peak:
                     </label>
                     <input type="text" id="message"
                         class="rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-stone-600 focus:border-transparent"
-                        name="message" placeholder="Message" @sync="message"/>
+                        name="message" placeholder="Message" @sync="message" />
                 </div>
+                <div class="mt-8">
+                    <div @if="show">Showing the if</div>
+                    <div @elseif="shouldShowElseIf">Showing the else if</div>
+                    <div @else>Finally, show the else</div>
+                </div>
+                <button type="button"
+                    class="inline-block rounded bg-stone-400 px-6 pt-2.5 pb-2 text-xs font-medium uppercase leading-normal text-stone-900 transition duration-150 ease-in-out hover:bg-zinc-300 focus:bg-primary-zink-200 focus:outline-none focus:ring-0 active:bg-primary-zink-400"
+                    @click="showIf" @if="!show">Show If</button>
+                <button type="button"
+                    class="inline-block rounded bg-stone-400 px-6 pt-2.5 pb-2 text-xs font-medium uppercase leading-normal text-stone-900 transition duration-150 ease-in-out hover:bg-zinc-300 focus:bg-primary-zink-200 focus:outline-none focus:ring-0 active:bg-primary-zink-400"
+                    @click="showElseIf()" @if="!orShow">Show Else If</button>
+                <button type="button"
+                    class="inline-block rounded bg-stone-400 px-6 pt-2.5 pb-2 text-xs font-medium uppercase leading-normal text-stone-900 transition duration-150 ease-in-out hover:bg-zinc-300 focus:bg-primary-zink-200 focus:outline-none focus:ring-0 active:bg-primary-zink-400"
+                    @click="showElse" @if="shouldShowElse">Show Else</button>
             </div>
             <div>
                 <span class="text-xl ml-1" @text="message"></span>
@@ -69,8 +83,28 @@ A little sneak peak:
 <script nonce="jFdn249Fnwelk429Df932jS3U2">
     function home() {
         return {
+            show: true,
+            orShow: false,
             message: 'hello world',
             latin: 'dum spiro spero',
+            get shouldShowElseIf() {
+                return this.orShow;
+            },
+            get shouldShowElse() {
+                return this.show || this.orShow;
+            },
+            showIf() {
+                this.show = true;
+                this.orShow = false;
+            },
+            showElseIf() {
+                this.show = false;
+                this.orShow = true;
+            },
+            showElse() {
+                this.show = false;
+                this.orShow = false;
+            },
             ignited() {
                 console.log(this.message);
             },
