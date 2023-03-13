@@ -451,13 +451,14 @@ export class Spargo {
     private retrieveNodeChildren(nodes: (string | VNode)[] | undefined, element: spargoElement, e: Event): (string | VNode)[] {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const target = e.target as any;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const object = element.object as any;
-
+    
+        const object = element.object as spargoElementObject;
+        
         return nodes?.map((childNode: string | VNode) => {
             if (typeof childNode !== 'string' && childNode.children && childNode.children.length > 0) {
                 return h(childNode.sel || '', childNode.data || null, this.retrieveNodeChildren(childNode.children, element, e));
-            } else if (typeof childNode !== 'string' && childNode.data && childNode.data.props && childNode.data.props['sync']) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } else if (typeof childNode !== 'string' && childNode.data && childNode.data.props && childNode.data.props['sync'] && childNode.data.props['sync'] === (e.target as any).sync) {
                 // update sync value in object
                 object[childNode.data.props['sync']] = target.value;
             } else if (typeof childNode !== 'string' && childNode.data && childNode.data.props && childNode.data.props['text']) {
