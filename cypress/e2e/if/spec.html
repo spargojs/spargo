@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Security-Policy"
+        content="script-src 'nonce-jFdn249Fnwelk429Df932jS3U2' 'self' data:; default-src 'self'; style-src https://cdn.tailwindcss.com 'unsafe-inline'">
+    <title>Spargo Test</title>
+    <script src="../../../../dist/cdn.js" defer></script>
+    <script src="https://cdn.tailwindcss.com" nonce="jFdn249Fnwelk429Df932jS3U2"></script>
+</head>
+
+<body class="bg-gray-100 font-sans antialiased">
+    <div class="flex justify-center mt-8" ignite="home">
+        <div class="mr-3">
+            <div class="relative mb-3 xl:w-96">
+                <div class="mt-8">
+                    <div id="show" @if="show">Showing the if</div>
+                    <div id="showElseIf" @elseif="shouldShowElseIf">Showing the else if</div>
+                    <div id="else" @else>Finally, show the else</div>
+                </div>
+                <button type="button" id="showIfButton"
+                    class="inline-block rounded bg-stone-400 px-6 pt-2.5 pb-2 text-xs font-medium uppercase leading-normal text-stone-900 transition duration-150 ease-in-out hover:bg-zinc-300 focus:bg-primary-zink-200 focus:outline-none focus:ring-0 active:bg-primary-zink-400"
+                    @click="showIf" @if="!show">Show If</button>
+                <button type="button" id="showElseIfButton"
+                    class="inline-block rounded bg-stone-400 px-6 pt-2.5 pb-2 text-xs font-medium uppercase leading-normal text-stone-900 transition duration-150 ease-in-out hover:bg-zinc-300 focus:bg-primary-zink-200 focus:outline-none focus:ring-0 active:bg-primary-zink-400"
+                    @click="showElseIf()" @if="!orShow">Show Else If</button>
+                <button type="button" id="showElseButton"
+                    class="inline-block rounded bg-stone-400 px-6 pt-2.5 pb-2 text-xs font-medium uppercase leading-normal text-stone-900 transition duration-150 ease-in-out hover:bg-zinc-300 focus:bg-primary-zink-200 focus:outline-none focus:ring-0 active:bg-primary-zink-400"
+                    @click="showElse" @if="shouldShowElse">Show Else</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
+<script nonce="jFdn249Fnwelk429Df932jS3U2">
+    function home() {
+        return {
+            show: true,
+            orShow: false,
+            get shouldShowElseIf() {
+                return this.orShow;
+            },
+            get shouldShowElse() {
+                return this.show || this.orShow;
+            },
+            showIf() {
+                this.show = true;
+                this.orShow = false;
+            },
+            showElseIf() {
+                this.show = false;
+                this.orShow = true;
+            },
+            showElse() {
+                this.show = false;
+                this.orShow = false;
+            },
+            ignited() {
+                console.log(this.message);
+            },
+        }
+    }
+</script>
