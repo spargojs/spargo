@@ -57,6 +57,7 @@ export class Spargo {
      * @description Create a new element
      * @param element 
      * @returns void
+     * @throws Error if the provided element does not have an associated method
      */
     createElement(element: Element): void {
         /**
@@ -98,6 +99,7 @@ export class Spargo {
      * @param children 
      * @param object 
      * @returns (string | VNode)[]
+     * @throws If an input is not synced to a piece of state, or if the synced value does not exist
      */
     private generateVNodes(children: NodeListOf<ChildNode>, object: spargoElementObject): (string | VNode)[] {
         const ifData = {
@@ -128,7 +130,7 @@ export class Spargo {
 
                             const value = object[sync];
 
-                            if (!value) {
+                            if (value === undefined && !Object.getOwnPropertyDescriptor(object, sync)?.set) {
                                 throw new Error(`${sync} does not exist.`);
                             }
 
@@ -307,12 +309,13 @@ export class Spargo {
      * @param object
      * @param nodeData
      * @returns VNode | undefined
+     * @throws If the associated text value (if it is set) does not exist in the object
      */
     private textNode(childElement: Element, object: spargoElementObject, nodeData: VNodeData): VNode | undefined {
         const textAttribute = childElement.getAttribute('@text');
 
         if (textAttribute) {
-            if (!object[textAttribute]) {
+            if (object[textAttribute] === undefined) {
                 throw new Error(`${textAttribute} does not exist in the object.`);
             }
 
@@ -382,6 +385,7 @@ export class Spargo {
      * @description Update the JavaScript state from an event and patch the view accordingly
      * @param e
      * @returns void
+     * @throws If the associated element is not found in memory
      */
     private updateState(e: Event): void {
         if (e.target) {
@@ -413,6 +417,7 @@ export class Spargo {
      * @param e
      * @param index
      * @returns void
+     * @throws If the associated element is not found in memory
      */
     private updateStateByElement(e: Event, index?: number | null): void {
         if (e.target) {
@@ -451,19 +456,23 @@ export class Spargo {
     private retrieveNodeChildren(nodes: (string | VNode)[] | undefined, element: spargoElement, e: Event): (string | VNode)[] {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const target = e.target as any;
-    
+
         const object = element.object as spargoElementObject;
-        
+
         return nodes?.map((childNode: string | VNode) => {
             if (typeof childNode !== 'string' && childNode.children && childNode.children.length > 0) {
                 return h(childNode.sel || '', childNode.data || null, this.retrieveNodeChildren(childNode.children, element, e));
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } else if (typeof childNode !== 'string' && childNode.data && childNode.data.props && childNode.data.props['sync'] && childNode.data.props['sync'] === (e.target as any).sync) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } else if (typeof childNode !== 'string' && childNode.data && childNode.data.props && childNode.data.props['sync'] && childNode.data.props['sync'] === target.sync) {
                 // update sync value in object
                 object[childNode.data.props['sync']] = target.value;
             } else if (typeof childNode !== 'string' && childNode.data && childNode.data.props && childNode.data.props['text']) {
-                // update text
-                if (childNode.data.props['text'] === target.sync) {
+                // update text if it matches the sync value, or if it is a getter - always update it, or if is present in the updatedBySetters array
+                if (
+                    childNode.data.props['text'] === target.sync ||
+                    Object.getOwnPropertyDescriptor(object, childNode.data.props['text'])?.get ||
+                    (object.updatedBySetters !== undefined && object.updatedBySetters.includes(childNode.data.props['text']))
+                ) {
                     return h(childNode.sel || '', childNode.data, object[childNode.data.props['text']]);
                 }
             }
