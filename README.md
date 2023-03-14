@@ -12,7 +12,7 @@ Spargo has many meanings: awesome, sprinkle, practicality, etc. We believe all o
 
 #### NPM
 
-> npm i spargojs
+`npm i spargojs`
 
 Then just import it and create a new instance of the Spargo class.
 
@@ -30,7 +30,7 @@ Just add the CDN to the head tag. There is both a minified version (cdn.min.js) 
 ## Contributing
 
 - clone this repo locally
-- run npm install & npm run start
+- run `npm install` & `npm run start`
 - Include the /dist/cdn.js file from a script tag on a webpage and you're good to go!
 
 ## Pre-Alpha
