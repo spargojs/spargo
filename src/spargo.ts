@@ -105,6 +105,7 @@ export class Spargo {
         const ifData = {
             ifIsFalse: false,
             elseIfIsFalse: false,
+            elseIfPresent: false,
         };
 
         return Array.from(children).map((child: ChildNode) => {
@@ -200,7 +201,7 @@ export class Spargo {
      * @param object 
      * @returns boolean
      */
-    private shouldNotIncludeCheck(childElement: Element, ifData: { ifIsFalse: boolean, elseIfIsFalse: boolean }, object: spargoElementObject): boolean {
+    private shouldNotIncludeCheck(childElement: Element, ifData: { ifIsFalse: boolean, elseIfIsFalse: boolean, elseIfPresent: boolean }, object: spargoElementObject): boolean {
         const ifCheck = childElement.getAttribute('@if');
 
         if (ifCheck && !this.valueTruthyInObject(ifCheck, object)) {
@@ -212,9 +213,14 @@ export class Spargo {
         const elseIfCheck = childElement.getAttribute('@elseif');
         const elseCheck = childElement.getAttribute('@else') !== null;
 
+        if (elseIfCheck) {
+            ifData.elseIfPresent = true;
+        }
+
         if (!elseIfCheck && !elseCheck) {
             ifData.ifIsFalse = false;
             ifData.elseIfIsFalse = false;
+            ifData.elseIfPresent = false;
         }
 
         if (!ifData.ifIsFalse && elseIfCheck) {
@@ -227,11 +233,12 @@ export class Spargo {
             return true;
         }
 
-        if ((!ifData.ifIsFalse || !ifData.elseIfIsFalse) && elseCheck) {
+        if ((!ifData.ifIsFalse || (ifData.elseIfPresent && !ifData.elseIfIsFalse)) && elseCheck) {
             return true;
         } else if (elseCheck) {
             ifData.ifIsFalse = false;
             ifData.elseIfIsFalse = false;
+            ifData.elseIfPresent = false;
         }
 
         return false;

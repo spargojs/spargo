@@ -1,6 +1,6 @@
 {
   "name": "spargo",
-  "version": "0.0.36",
+  "version": "0.0.37",
   "description": "The lightweight JavaScript framework for inserting a little reactivity into some markup.",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
@@ -13,7 +13,7 @@
     "build": "node build.js",
     "start": "node build.js --watch",
     "release": "node release.js && git add . && git commit -m 'Updated readme with new relase' && git push",
-    "patch": "git add . && git commit -m 'patch started' && git push && npm version patch && npm run release",
+    "patch": "npm version patch && npm run release",
     "patch-publish": "npm run patch && npm publish",
     "test": "cypress run",
     "lint": "npx eslint .",
