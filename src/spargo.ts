@@ -83,15 +83,73 @@ export class Spargo {
 
         const id = `spargo-${crypto.randomUUID()}`;
 
+        const pureElement = element.cloneNode(true) as Element;
+
+        this.iterateOverLoops(element, object); // ? Manipulates element for the this.generateVNodes method call below
+
         const node = h(id, { class: this.retrieveClasses(element) }, this.generateVNodes(element.childNodes, object));
 
         patch(toVNode(element), node);
 
-        this.elements.push({ id, vNode: node, object, element });
+        this.elements.push({ id, vNode: node, object, element: pureElement });
 
         if (typeof object.ignited === 'function') {
             object.ignited();
         }
+    }
+
+    /**
+     * @description Prepares the given element to pass through the generateVNodes method
+     * @param element 
+     * @param object 
+     * @returns void
+     * @throws If the provided piece of state to iterate over does not exist
+     */
+    private iterateOverLoops(element: Element, object: spargoElementObject): void {
+        Array.from(element.children).forEach((child: Element) => {
+            const forCheck = child.getAttribute('@for');
+
+            if (forCheck) {
+                const [name, objectKey] = forCheck.split('in');
+
+                if (object[objectKey.trim()] === undefined) {
+                    throw new Error(`${objectKey.trim()} does not exist in the object.`)
+                }
+
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                object[objectKey.trim()].forEach((value: string | { [key: string]: any }) => {
+                    const newNode = child.cloneNode(true);
+
+                    newNode.childNodes.forEach((node) => {
+                        if (node.nodeType === 1 && (node as Element).hasAttribute('@text')) { // Element
+                            const text = (node as Element).getAttribute('@text');
+
+                            if (text) {
+                                if (name.trim() === '_') { // ? This means that the values will be dot notated
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                    (node as any).innerText = (value as { [key: string]: any })[text];
+                                } else { // ? The values should just be the name
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                    (node as any).innerText = value;
+                                }
+
+                                (node as Element).removeAttribute('@text');
+                            }
+                        }
+                    });
+
+                    child.parentElement?.appendChild(newNode);
+                });
+
+                child.parentElement?.removeAttribute('@for');
+
+                child.remove();
+            }
+
+            if (child.children.length > 0) {
+                this.iterateOverLoops(child, object)
+            }
+        });
     }
 
     /**
@@ -441,7 +499,13 @@ export class Spargo {
 
             const spargoElement = this.elements[index];
 
+            const pureElement = spargoElement.element.cloneNode(true) as Element;
+
+            this.iterateOverLoops(spargoElement.element, spargoElement.object);
+
             const updatedNodeChildren: (string | VNode)[] = this.generateVNodes(spargoElement.element.childNodes, spargoElement.object);
+
+            spargoElement.element = pureElement; // ? this.iterateOverLoops updates spargoElement.element and must be reset back
 
             if (updatedNodeChildren.length > 0 && spargoElement.vNode.sel && spargoElement.vNode.data) {
                 const updatedNode = h(spargoElement.vNode.sel, spargoElement.vNode.data, updatedNodeChildren);
