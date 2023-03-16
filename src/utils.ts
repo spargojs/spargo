@@ -77,9 +77,11 @@ function retrieveClasses(element: Element): Classes {
     const classesObject: { [key: string]: boolean } = {};
 
     if (classes) {
-        classes.split(' ').forEach((classString: string) => {
-            classesObject[classString] = true;
-        });
+        classes.split(' ')
+            .filter((classString: string) => classString.trim() !== '')
+            .forEach((classString: string) => {
+                classesObject[classString] = true;
+            });
     }
 
     return classesObject;
