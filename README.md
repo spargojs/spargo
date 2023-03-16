@@ -23,7 +23,7 @@ Just add the CDN to the head tag. There is both a minified version (cdn.min.js) 
 ```html
 <head>
     <!-- Other Items in head tag -->
-    <script src="https://unpkg.com/spargo@0.0.42/dist/cdn.min.js" defer></script>
+    <script src="https://unpkg.com/spargo@0.1.0/dist/cdn.min.js" defer></script>
 </head>
 ```
 
@@ -32,10 +32,6 @@ Just add the CDN to the head tag. There is both a minified version (cdn.min.js) 
 - clone this repo locally
 - run `npm install` & `npm run start`
 - Include the /dist/cdn.js file from a script tag on a webpage and you're good to go!
-
-## Pre-Alpha
-
-Right now Spargo.js is in heavy development and bugs are to be expected.
 
 ## Docs
 
@@ -191,6 +187,29 @@ Similar to Vue's v-for, it is used to iterate over a piece of state and display 
 </script>
 ```
 
+#### @mask
+
+Used to automatically format a text input field as a user types. Right now, there are only certain options:
+
+1. phone
+2. currency (*coming soon*)
+3. time (*coming soon*)
+4. zip (*coming soon*)
+
+```html
+<div ignite="home">
+    <!-- As the user types, the value will be masked and updated to a properly formatted phone number -->
+    <input type="tel" id="mask" name="mask" placeholder="Phone" @sync="mask" @mask="phone" />
+</div>
+<script nonce="someRandomNonce">
+    function home() {
+        return {
+            mask: '',
+        }
+    }
+</script>
+```
+
 #### getters
 
 Used to add a more complicated expression to other features.
@@ -286,16 +305,29 @@ One of the lifecycle methods. This method will be run once the initialization pr
     }
 </script>
 ```
-___
-#### *In Process*
 
-#### @mask
-
-Used to automatically format a text input field as a user types.
-
-#### @spark
+#### spark
 
 Another lifecycle method. This method will be run at the very beginning of the initialization process.
+
+```html
+<div ignite="home">
+    <!-- Reactive Content -->
+</div>
+<script nonce="someRandomNonce">
+    function home() {
+        return {
+            message: 'hello world',
+            spark() {
+                // This is a good spot to do an API request for data!
+                this.message = 'foo bar';
+            },
+        }
+    }
+</script>
+```
+
+___
 
 ## CSP
 

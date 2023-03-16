@@ -68,6 +68,10 @@ export class Spargo {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const object: spargoElementObject = ((window as any)[element.getAttribute('ignite') as string])();
 
+        if (typeof object.spark === 'function') {
+            object.spark();
+        }
+
         if (!object) {
             throw new Error(`${element.getAttribute('ignite')} does not exist as a method on the page.`);
         }
