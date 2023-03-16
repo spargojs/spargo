@@ -33,10 +33,6 @@ Just add the CDN to the head tag. There is both a minified version (cdn.min.js) 
 - run `npm install` & `npm run start`
 - Include the /dist/cdn.js file from a script tag on a webpage and you're good to go!
 
-## Pre-Alpha
-
-Right now Spargo.js is in heavy development and bugs are to be expected.
-
 ## Docs
 
 Docs Site Coming Soon!
