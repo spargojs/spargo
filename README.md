@@ -23,7 +23,7 @@ Just add the CDN to the head tag. There is both a minified version (cdn.min.js) 
 ```html
 <head>
     <!-- Other Items in head tag -->
-    <script src="https://unpkg.com/spargo@0.0.42/dist/cdn.min.js" defer></script>
+    <script src="https://unpkg.com/spargo@0.0.43/dist/cdn.min.js" defer></script>
 </head>
 ```
 
