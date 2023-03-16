@@ -77,7 +77,7 @@ Similar to Vue's v-model, it will keep a piece of state in sync.
 
 #### @text
 
-Used to display a piece of state as a value
+Used to display a piece of state as a value.
 
 ```html
 <div ignite="home">
@@ -94,7 +94,7 @@ Used to display a piece of state as a value
 
 #### @if / @elseif / @else
 
-Used to conditionally show markup
+Used to conditionally show markup.
 
 ```html
 <div ignite="home">
@@ -114,7 +114,7 @@ Used to conditionally show markup
 
 #### @click
 
-Used to add a click event to an element
+Used to add a click event to an element.
 
 ```html
 <div ignite="home">
@@ -193,7 +193,7 @@ Similar to Vue's v-for, it is used to iterate over a piece of state and display 
 
 #### getters
 
-Used to add a more complicated expression to other features
+Used to add a more complicated expression to other features.
 
 ```html
 <div ignite="home">
@@ -233,7 +233,7 @@ Used to add a more complicated expression to other features
 
 #### setters
 
-Used to conduct several actions off of setting a value
+Used to conduct several actions off of setting a value.
 
 ```html
 <div ignite="home">
