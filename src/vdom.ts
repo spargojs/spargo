@@ -1,4 +1,5 @@
 import { h, VNode, VNodeData } from "snabbdom";
+import morphs from "./morphs";
 import { spargoElement, spargoElementObject } from "./types";
 import { generateProps, retrieveClasses, valueTruthyInObject } from "./utils";
 
@@ -16,7 +17,7 @@ export class Vdom {
      * @param children 
      * @param object 
      * @returns (string | VNode)[]
-     * @throws If an input is not synced to a piece of state, or if the synced value does not exist
+     * @throws If an input is not synced to a piece of state, or if the synced value does not exist, or if the morph does not exist
      */
     public generateVNodes(children: NodeListOf<ChildNode>, object: spargoElementObject): (string | VNode)[] {
         const ifData = {
@@ -52,9 +53,22 @@ export class Vdom {
                                 throw new Error(`${sync} does not exist.`);
                             }
 
+                            const morph = childElement.getAttribute('@morph');
+
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            if (morph && (morphs as any)[morph] === undefined) {
+                                throw new Error(`The @morph ${morph} does not exist.`);
+                            } else if (morph) {
+                                if (object.morphs === undefined) {
+                                    object.morphs = {};
+                                }
+
+                                object.morphs[sync] = morph;
+                            }
+
                             const updateState = (e: Event) => { this.updateState(e) };
 
-                            nodeData.props = generateProps({ value, sync }, childElement);
+                            nodeData.props = generateProps({ value, sync, morph }, childElement);
                             nodeData.on = { input: updateState };
 
                             return this.generateVNode(child, childElement, object, nodeData);
@@ -151,7 +165,7 @@ export class Vdom {
                         }
                     });
 
-                    child.parentElement?.appendChild(newNode);
+                    child.before(newNode);
                 });
 
                 child.parentElement?.removeAttribute('@for');
@@ -163,6 +177,46 @@ export class Vdom {
                 this.iterateOverLoops(child, object)
             }
         });
+    }
+
+    /**
+    * @description Update the JavaScript state from an event and patch the view accordingly via the element
+    * @param e
+    * @param index
+    * @returns void
+    * @throws If the associated element is not found in memory
+    */
+    public updateStateByElement(e: Event, index?: number | null): void {
+        if (e.target) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const target = (e.target as any);
+
+            if (!index) {
+                index = this.elements.findIndex(element => element.id === this.findSpargoParentNodeLocalName(target.parentNode));
+            }
+
+            if (index < 0) {
+                throw new Error(`Element with id of ${target.parentNode.localName} not found in memory`);
+            }
+
+            const spargoElement = this.elements[index];
+
+            const pureElement = spargoElement.element.cloneNode(true) as Element;
+
+            this.iterateOverLoops(spargoElement.element, spargoElement.object);
+
+            const updatedNodeChildren: (string | VNode)[] = this.generateVNodes(spargoElement.element.childNodes, spargoElement.object);
+
+            spargoElement.element = pureElement; // ? this.iterateOverLoops updates spargoElement.element and must be reset back
+
+            if (updatedNodeChildren.length > 0 && spargoElement.vNode.sel && spargoElement.vNode.data) {
+                const updatedNode = h(spargoElement.vNode.sel, spargoElement.vNode.data, updatedNodeChildren);
+
+                this.patch(spargoElement.vNode, updatedNode);
+
+                spargoElement.vNode = updatedNode;
+            }
+        }
     }
 
     /**
@@ -307,46 +361,6 @@ export class Vdom {
     }
 
     /**
-     * @description Update the JavaScript state from an event and patch the view accordingly via the element
-     * @param e
-     * @param index
-     * @returns void
-     * @throws If the associated element is not found in memory
-     */
-    private updateStateByElement(e: Event, index?: number | null): void {
-        if (e.target) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const target = (e.target as any);
-
-            if (!index) {
-                index = this.elements.findIndex(element => element.id === this.findSpargoParentNodeLocalName(target.parentNode));
-            }
-
-            if (index < 0) {
-                throw new Error(`Element with id of ${target.parentNode.localName} not found in memory`);
-            }
-
-            const spargoElement = this.elements[index];
-
-            const pureElement = spargoElement.element.cloneNode(true) as Element;
-
-            this.iterateOverLoops(spargoElement.element, spargoElement.object);
-
-            const updatedNodeChildren: (string | VNode)[] = this.generateVNodes(spargoElement.element.childNodes, spargoElement.object);
-
-            spargoElement.element = pureElement; // ? this.iterateOverLoops updates spargoElement.element and must be reset back
-
-            if (updatedNodeChildren.length > 0 && spargoElement.vNode.sel && spargoElement.vNode.data) {
-                const updatedNode = h(spargoElement.vNode.sel, spargoElement.vNode.data, updatedNodeChildren);
-
-                this.patch(spargoElement.vNode, updatedNode);
-
-                spargoElement.vNode = updatedNode;
-            }
-        }
-    }
-
-    /**
      * @description Hunt down the snabbdom .sel for the given element
      * @param element 
      * @returns string
@@ -381,7 +395,13 @@ export class Vdom {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } else if (typeof childNode !== 'string' && childNode.data && childNode.data.props && childNode.data.props['sync'] && childNode.data.props['sync'] === target.sync) {
                 // update sync value in object
-                object[childNode.data.props['sync']] = target.value;
+                if (childNode.data.props['morph']) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    object[childNode.data.props['sync']] = (morphs as any)[childNode.data.props['morph']](target.value);
+                    target.value = object[childNode.data.props['sync']]; // Update the value of the target (input) to the morphed value
+                } else {
+                    object[childNode.data.props['sync']] = target.value;
+                }
             } else if (typeof childNode !== 'string' && childNode.data && childNode.data.props && childNode.data.props['text']) {
                 // update text if it matches the sync value, or if it is a getter - always update it, or if is present in the updatedBySetters array
                 if (
