@@ -132,6 +132,65 @@ Used to add a click event to an element
 </script>
 ```
 
+#### @for
+
+Similar to Vue's v-for, it is used to iterate over a piece of state and display markup in the process.
+
+
+```html
+<div ignite="home">
+    <div>
+        <button type="button" @click="addPortugal">Add Portugal</button>
+        <!-- Doing a named value tells Spargo it is a flat array -->
+        <div @for="country in countries">
+            <p @text="country"></p>
+        </div>
+        <!-- Doing an unnamed value (with an underscore) tells Spargo it is an array of objects -->
+        <div @for="_ in users">
+            <!-- Since Spargo is aware it is supposed to expect an array of objects, there is -->
+            <!-- no need to include the value followed by a dot and a key (dot-notation). The @for -->
+            <!-- could have been "user in users", and the @text user.name - going with convention. -->
+            <!-- However, Spargo decided to keep things simple, and go a shorthand route. -->
+            <p @text="name"></p>
+            <p @text="email"></p>
+        </div>
+    </div>
+</div>
+<script nonce="someRandomNonce">
+    function home() {
+        return {
+            users: [
+                {
+                    name: 'Jon Doe',
+                    email: 'jdoe@example.org'
+                },
+                {
+                    name: 'Jane Cool',
+                    email: 'jcool@example.org'
+                },
+                {
+                    name: 'Jack Foo',
+                    email: 'jfoo@example.org'
+                },
+                {
+                    name: 'Jim Bar',
+                    email: 'jbar@example.org'
+                }
+            ],
+            countries: [
+                'America',
+                'Canada',
+                'Mexico',
+                'England'
+            ],
+            addPortugal() {
+                this.countries.push('Portugal');
+            },
+        }
+    }
+</script>
+```
+
 #### getters
 
 Used to add a more complicated expression to other features
@@ -202,65 +261,6 @@ Used to conduct several actions off of setting a value
             set updateSetterValue(value) {
                 this.setterCount++;
                 this.setterValue = value;
-            },
-        }
-    }
-</script>
-```
-
-#### @for
-
-Similar to Vue's v-for, it is used to iterate over a piece of state and display markup in the process.
-
-
-```html
-<div ignite="home">
-    <div>
-        <button type="button" @click="addPortugal">Add Portugal</button>
-        <!-- Doing a named value tells Spargo it is a flat array -->
-        <div @for="country in countries">
-            <p @text="country"></p>
-        </div>
-        <!-- Doing an unnamed value (with an underscore) tells Spargo it is an array of objects -->
-        <div @for="_ in users">
-            <!-- Since Spargo is aware it is supposed to expect an array of objects, there is -->
-            <!-- no need to include the value followed by a dot and a key (dot-notation). The @for -->
-            <!-- could have been "user in users", and the @text user.name - going with convention. -->
-            <!-- However, Spargo decided to keep things simple, and go a shorthand route. -->
-            <p @text="name"></p>
-            <p @text="email"></p>
-        </div>
-    </div>
-</div>
-<script nonce="someRandomNonce">
-    function home() {
-        return {
-            users: [
-                {
-                    name: 'Jon Doe',
-                    email: 'jdoe@example.org'
-                },
-                {
-                    name: 'Jane Cool',
-                    email: 'jcool@example.org'
-                },
-                {
-                    name: 'Jack Foo',
-                    email: 'jfoo@example.org'
-                },
-                {
-                    name: 'Jim Bar',
-                    email: 'jbar@example.org'
-                }
-            ],
-            countries: [
-                'America',
-                'Canada',
-                'Mexico',
-                'England'
-            ],
-            addPortugal() {
-                this.countries.push('Portugal');
             },
         }
     }
