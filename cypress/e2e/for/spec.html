@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Security-Policy"
+        content="script-src 'nonce-jFdn249Fnwelk429Df932jS3U2' 'self' data:; default-src 'self'; style-src https://cdn.tailwindcss.com 'unsafe-inline'">
+    <title>Spargo Test</title>
+    <script src="../../../../dist/cdn.js" defer></script>
+    <script src="https://cdn.tailwindcss.com" nonce="jFdn249Fnwelk429Df932jS3U2"></script>
+</head>
+
+<body class="bg-gray-100 font-sans antialiased">
+    <div class="mt-8" ignite="home">
+        <button type="button" id="addPortugal"
+            class="inline-block rounded bg-stone-400 px-6 pt-2.5 pb-2 text-xs font-medium uppercase leading-normal text-stone-900 transition duration-150 ease-in-out hover:bg-zinc-300 focus:bg-primary-zink-200 focus:outline-none focus:ring-0 active:bg-primary-zink-400"
+            @click="addPortugal">Add Portugal</button>
+        <div @for="country in countries">
+            <p class="text-xl" @text="country"></p>
+        </div>
+        <div @for="_ in users">
+            <p @text="name"></p>
+            <p @text="email"></p>
+        </div>
+    </div>
+</body>
+
+</html>
+<script nonce="jFdn249Fnwelk429Df932jS3U2">
+    function home() {
+        return {
+            users: [
+                {
+                    name: 'Jon Doe',
+                    email: 'jdoe@example.org'
+                },
+                {
+                    name: 'Jane Cool',
+                    email: 'jcool@example.org'
+                },
+                {
+                    name: 'Jack Foo',
+                    email: 'jfoo@example.org'
+                },
+                {
+                    name: 'Jim Bar',
+                    email: 'jbar@example.org'
+                }
+            ],
+            countries: [
+                'America',
+                'Canada',
+                'Mexico',
+                'England'
+            ],
+            addPortugal() {
+                this.countries.push('Portugal');
+            },
+        }
+    }
+</script>
