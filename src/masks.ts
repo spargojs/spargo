@@ -15,8 +15,8 @@ const phone = (value: string): string => {
     return value;
 };
 
-const morphs = {
+const masks = {
     phone
 }
 
-export default morphs
+export default masks

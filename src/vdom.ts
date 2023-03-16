@@ -1,5 +1,5 @@
 import { h, VNode, VNodeData } from "snabbdom";
-import morphs from "./morphs";
+import masks from "./masks";
 import { spargoElement, spargoElementObject } from "./types";
 import { generateProps, retrieveClasses, valueTruthyInObject } from "./utils";
 
@@ -17,7 +17,7 @@ export class Vdom {
      * @param children 
      * @param object 
      * @returns (string | VNode)[]
-     * @throws If an input is not synced to a piece of state, or if the synced value does not exist, or if the morph does not exist
+     * @throws If an input is not synced to a piece of state, or if the synced value does not exist, or if the mask does not exist
      */
     public generateVNodes(children: NodeListOf<ChildNode>, object: spargoElementObject): (string | VNode)[] {
         const ifData = {
@@ -53,22 +53,16 @@ export class Vdom {
                                 throw new Error(`${sync} does not exist.`);
                             }
 
-                            const morph = childElement.getAttribute('@morph');
+                            const mask = childElement.getAttribute('@mask');
 
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            if (morph && (morphs as any)[morph] === undefined) {
-                                throw new Error(`The @morph ${morph} does not exist.`);
-                            } else if (morph) {
-                                if (object.morphs === undefined) {
-                                    object.morphs = {};
-                                }
-
-                                object.morphs[sync] = morph;
+                            if (mask && (masks as any)[mask] === undefined) {
+                                throw new Error(`The @mask ${mask} does not exist.`);
                             }
 
                             const updateState = (e: Event) => { this.updateState(e) };
 
-                            nodeData.props = generateProps({ value, sync, morph }, childElement);
+                            nodeData.props = generateProps({ value, sync, mask }, childElement);
                             nodeData.on = { input: updateState };
 
                             return this.generateVNode(child, childElement, object, nodeData);
@@ -395,10 +389,10 @@ export class Vdom {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } else if (typeof childNode !== 'string' && childNode.data && childNode.data.props && childNode.data.props['sync'] && childNode.data.props['sync'] === target.sync) {
                 // update sync value in object
-                if (childNode.data.props['morph']) {
+                if (childNode.data.props['mask']) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    object[childNode.data.props['sync']] = (morphs as any)[childNode.data.props['morph']](target.value);
-                    target.value = object[childNode.data.props['sync']]; // Update the value of the target (input) to the morphed value
+                    object[childNode.data.props['sync']] = (masks as any)[childNode.data.props['mask']](target.value);
+                    target.value = object[childNode.data.props['sync']]; // Update the value of the target (input) to the masked value
                 } else {
                     object[childNode.data.props['sync']] = target.value;
                 }
