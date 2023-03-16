@@ -208,26 +208,6 @@ Used to conduct several actions off of setting a value
 </script>
 ```
 
-#### ignited
-
-One of the lifecycle methods. This method will be run once the initialization process is done.
-
-```html
-<div ignite="home">
-    <!-- Reactive Content -->
-</div>
-<script nonce="someRandomNonce">
-    function home() {
-        return {
-            message: 'hello world',
-            ignited() {
-                console.log(this.message);
-            },
-        }
-    }
-</script>
-```
-
 #### @for
 
 Similar to Vue's v-for, it is used to iterate over a piece of state and display markup in the process.
@@ -241,7 +221,7 @@ Similar to Vue's v-for, it is used to iterate over a piece of state and display 
         <div @for="country in countries">
             <p @text="country"></p>
         </div>
-        <!-- Doing an unnamed value (with and underscore) tells Spargo it is an array of objects -->
+        <!-- Doing an unnamed value (with an underscore) tells Spargo it is an array of objects -->
         <div @for="_ in users">
             <!-- Since Spargo is aware it is supposed to expect an array of objects, there is -->
             <!-- no need to include the value followed by a dot and a key (dot-notation). The @for -->
@@ -287,6 +267,25 @@ Similar to Vue's v-for, it is used to iterate over a piece of state and display 
 </script>
 ```
 
+#### ignited
+
+One of the lifecycle methods. This method will be run once the initialization process is done.
+
+```html
+<div ignite="home">
+    <!-- Reactive Content -->
+</div>
+<script nonce="someRandomNonce">
+    function home() {
+        return {
+            message: 'hello world',
+            ignited() {
+                console.log(this.message);
+            },
+        }
+    }
+</script>
+```
 ___
 #### *In Process*
 
