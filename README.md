@@ -43,7 +43,7 @@ Docs Site Coming Soon!
 
 #### ignite
 
-Use ignite to make a piece of your markup reactive.
+Used to make a piece of your markup reactive.
 
 ```html
 <div ignite="home">
