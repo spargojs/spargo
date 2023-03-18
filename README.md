@@ -180,7 +180,9 @@ Similar to Vue's v-for, it is used to iterate over a piece of state and display 
                 'England'
             ],
             addPortugal() {
-                this.countries.push('Portugal');
+                // Spargo.js will not react to array or object changes. 
+                // A simple workaround is to overwrite.
+                this.countries = [...this.countries, 'Portugal'];
             },
         }
     }
@@ -299,28 +301,8 @@ One of the lifecycle methods. This method will be run once the initialization pr
         return {
             message: 'hello world',
             ignited() {
-                console.log(this.message);
-            },
-        }
-    }
-</script>
-```
-
-#### spark
-
-Another lifecycle method. This method will be run at the very beginning of the initialization process.
-
-```html
-<div ignite="home">
-    <!-- Reactive Content -->
-</div>
-<script nonce="someRandomNonce">
-    function home() {
-        return {
-            message: 'hello world',
-            spark() {
                 // This is a good spot to do an API request for data!
-                this.message = 'foo bar';
+                console.log(this.message);
             },
         }
     }
