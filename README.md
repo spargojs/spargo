@@ -274,11 +274,6 @@ Used to conduct several actions off of setting a value.
         return {
             setterCount: 0,
             setterValue: null,
-            // Defines the pieces of state that get updated via setters and
-            // should be reactive in the dom accordingly.
-            // Without this, then the @text's in the dom will not 
-            // update every time the pieces of state update in the object.
-            updatedBySetters: ['setterValue', 'setterCount'],
             set updateSetterValue(value) {
                 this.setterCount++;
                 this.setterValue = value;
