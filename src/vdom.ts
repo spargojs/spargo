@@ -94,9 +94,6 @@ export class Vdom {
                                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                         (this.elements[index] as any).object[method ? click : click.slice(0, -2)]();
                                     }
-
-                                    // if the @if is falsy, the element is never transfered to the vdom, so the node must be patched via the original element
-                                    this.updateStateByElement(e, index);
                                 };
 
                                 nodeData.on = { click: runFunction };
@@ -174,43 +171,37 @@ export class Vdom {
     }
 
     /**
-    * @description Update the JavaScript state from an event and patch the view accordingly via the element
+    * @description Update the JavaScript state from an update to state and patch the view accordingly via the element
     * @param e
     * @param index
     * @returns void
     * @throws If the associated element is not found in memory
     */
-    public updateStateByElement(e: Event, index?: number | null): void {
-        if (e.target) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const target = (e.target as any);
+    public updateByElement(spargoElementObject: spargoElementObject): void {
+        const spargoElement = this.elements.find((element) => {
+            return element.object === spargoElementObject;
+        });
 
-            if (!index) {
-                index = this.elements.findIndex(element => element.id === this.findSpargoParentNodeLocalName(target.parentNode));
-            }
-
-            if (index < 0) {
-                throw new Error(`Element with id of ${target.parentNode.localName} not found in memory`);
-            }
-
-            const spargoElement = this.elements[index];
-
-            const pureElement = spargoElement.element.cloneNode(true) as Element;
-
-            this.iterateOverLoops(spargoElement.element, spargoElement.object);
-
-            const updatedNodeChildren: (string | VNode)[] = this.generateVNodes(spargoElement.element.childNodes, spargoElement.object);
-
-            spargoElement.element = pureElement; // ? this.iterateOverLoops updates spargoElement.element and must be reset back
-
-            if (updatedNodeChildren.length > 0 && spargoElement.vNode.sel && spargoElement.vNode.data) {
-                const updatedNode = h(spargoElement.vNode.sel, spargoElement.vNode.data, updatedNodeChildren);
-
-                this.patch(spargoElement.vNode, updatedNode);
-
-                spargoElement.vNode = updatedNode;
-            }
+        if (!spargoElement) {
+            throw new Error('Value updated in state, but the associated object could not be found in memory.');
         }
+
+        const pureElement = spargoElement.element.cloneNode(true) as Element;
+
+        this.iterateOverLoops(spargoElement.element, spargoElement.object);
+
+        const updatedNodeChildren: (string | VNode)[] = this.generateVNodes(spargoElement.element.childNodes, spargoElement.object);
+
+        spargoElement.element = pureElement; // ? this.iterateOverLoops updates spargoElement.element and must be reset back
+
+        if (updatedNodeChildren.length > 0 && spargoElement.vNode.sel && spargoElement.vNode.data) {
+            const updatedNode = h(spargoElement.vNode.sel, spargoElement.vNode.data, updatedNodeChildren);
+
+            this.patch(spargoElement.vNode, updatedNode);
+
+            spargoElement.vNode = updatedNode;
+        }
+
     }
 
     /**
@@ -342,15 +333,7 @@ export class Vdom {
 
             const element = this.elements[index];
 
-            const updatedNodeChildren: (string | VNode)[] = this.retrieveNodeChildren(element.vNode.children, element, e);
-
-            if (updatedNodeChildren.length > 0 && element.vNode.sel && element.vNode.data) {
-                const updatedNode = h(element.vNode.sel, element.vNode.data, updatedNodeChildren);
-
-                this.patch(element.vNode, updatedNode);
-
-                element.vNode = updatedNode;
-            }
+            this.retrieveNodeChildren(element.vNode.children, element, e);
         }
     }
 
@@ -373,19 +356,19 @@ export class Vdom {
     /**
      * @description Generate new snabbdom nodes with updated values and update any necessary JavaScript state
      * @param nodes 
-     * @param element 
+     * @param element
      * @param e 
-     * @returns (string | VNode)[]
+     * @returns void
      */
-    private retrieveNodeChildren(nodes: (string | VNode)[] | undefined, element: spargoElement, e: Event): (string | VNode)[] {
+    private retrieveNodeChildren(nodes: (string | VNode)[] | undefined, element: spargoElement, e: Event): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const target = e.target as any;
 
         const object = element.object as spargoElementObject;
 
-        return nodes?.map((childNode: string | VNode) => {
+        nodes?.map((childNode: string | VNode) => {
             if (typeof childNode !== 'string' && childNode.children && childNode.children.length > 0) {
-                return h(childNode.sel || '', childNode.data || null, this.retrieveNodeChildren(childNode.children, element, e));
+                this.retrieveNodeChildren(childNode.children, element, e);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } else if (typeof childNode !== 'string' && childNode.data && childNode.data.props && childNode.data.props['sync'] && childNode.data.props['sync'] === target.sync) {
                 // update sync value in object
@@ -396,18 +379,7 @@ export class Vdom {
                 } else {
                     object[childNode.data.props['sync']] = target.value;
                 }
-            } else if (typeof childNode !== 'string' && childNode.data && childNode.data.props && childNode.data.props['text']) {
-                // update text if it matches the sync value, or if it is a getter - always update it, or if is present in the updatedBySetters array
-                if (
-                    childNode.data.props['text'] === target.sync ||
-                    Object.getOwnPropertyDescriptor(object, childNode.data.props['text'])?.get ||
-                    (object.updatedBySetters !== undefined && object.updatedBySetters.includes(childNode.data.props['text']))
-                ) {
-                    return h(childNode.sel || '', childNode.data, object[childNode.data.props['text']]);
-                }
             }
-
-            return childNode;
-        }) ?? [];
+        });
     }
 }
