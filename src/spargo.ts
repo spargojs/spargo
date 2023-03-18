@@ -26,8 +26,6 @@ export class Spargo {
         this.vdom = new Vdom(this.elements, patch);
 
         this.initialize();
-
-        // TODO: Create listener for popstate to re-initialize and update synced text
     }
 
     /**
@@ -68,10 +66,6 @@ export class Spargo {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const object: spargoElementObject = ((window as any)[element.getAttribute('ignite') as string])();
 
-        if (typeof object.spark === 'function') {
-            object.spark();
-        }
-
         if (!object) {
             throw new Error(`${element.getAttribute('ignite')} does not exist as a method on the page.`);
         }
@@ -86,10 +80,23 @@ export class Spargo {
 
         patch(toVNode(element), node);
 
-        this.elements.push({ id, vNode: node, object, element: pureElement });
+        const objectProxy = new Proxy(object, {
+            set: (object, key, value, proxy) => {
+                if (typeof key === 'string') {
+                    object[key] = value;
+                }
 
-        if (typeof object.ignited === 'function') {
-            object.ignited();
+                // ? Trigger a change to the dom for the given element
+                this.vdom.updateByElement(proxy)
+
+                return true;
+            }
+        });
+
+        this.elements.push({ id, vNode: node, object: objectProxy, element: pureElement });
+
+        if (typeof objectProxy.ignited === 'function') {
+            objectProxy.ignited();
         }
     }
 }
