@@ -1,4 +1,4 @@
-import { Classes } from "snabbdom";
+import { Attrs, Classes, Props } from "snabbdom";
 import { spargoElementObject } from "./types";
 
 /**
@@ -35,7 +35,7 @@ function valueTruthyInObject(value: string, object: spargoElementObject): boolea
  * @param element 
  * @returns object
  */
-function generateProps(object: object, element: Element): object {
+function generateProps(object: object, element: Element): Props {
     const attributes = [
         'id',
         'name',
@@ -50,16 +50,82 @@ function generateProps(object: object, element: Element): object {
         'hidden',
         'selected',
         'for',
-        'type'
+        'type',
+        'max',
+        'min',
+        'accept',
+        'accept-charset',
+        'accesskey',
+        'action',
+        'align',
+        'allow',
+        'alt',
+        'async',
+        'autocapitalize',
+        'autocomplete',
+        'autofocus',
+        'autoplay',
+        'bgcolor',
+        'buffered',
+        'capture',
+        'charset',
+        'checked',
+        'cite',
+        'code',
+        'codebase',
+        'color',
+        'cols',
+        'colspan',
+        'content',
+        'contenteditable',
+        'disabled',
+        'draggable'
     ];
 
-    const expandedObject: { [key: string]: string } = {};
+    const expandedObject: Props = {};
 
     attributes.forEach((attr: string) => {
         const elementAttr = element.getAttribute(attr);
 
-        if (elementAttr) {
-            expandedObject[attr] = elementAttr;
+        if (elementAttr !== null) {
+            expandedObject[attr] = elementAttr || true;
+        }
+    });
+
+    return { ...expandedObject, ...object };
+}
+
+/**
+ * @description Retrieves the attrs of the element in the format that snabbdom expects
+ * @param object 
+ * @param element 
+ * @returns object
+ */
+function generateAttrs(object: object, element: Element): Attrs {
+    const attributes = [
+        'xmlns',
+        'fill',
+        'viewBox',
+        'stroke-width',
+        'stroke',
+        'stroke-linecap',
+        'stroke-linejoin',
+        'd'
+    ];
+
+    const expandedObject: Attrs = {};
+
+    attributes.forEach((attr: string) => {
+        const elementAttr = element.getAttribute(attr);
+
+        if (elementAttr !== null) {
+            if (Number.parseFloat(elementAttr)) {
+                expandedObject[attr] = Number.parseFloat(elementAttr);
+            } else if (Number.parseInt(elementAttr)) {
+                expandedObject[attr] = Number.parseInt(elementAttr);
+            } else {
+                expandedObject[attr] = elementAttr || true;
+            }
         }
     });
 
@@ -87,4 +153,4 @@ function retrieveClasses(element: Element): Classes {
     return classesObject;
 }
 
-export { valueTruthyInObject, generateProps, retrieveClasses };
+export { valueTruthyInObject, generateProps, generateAttrs, retrieveClasses };
