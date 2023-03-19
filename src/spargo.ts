@@ -4,6 +4,7 @@ import {
     propsModule,
     styleModule, // TODO: Must implement
     eventListenersModule,
+    attributesModule,
     h,
     toVNode,
 } from "snabbdom";
@@ -15,17 +16,20 @@ const patch = init([
     classModule,
     propsModule,
     styleModule,
+    attributesModule,
     eventListenersModule,
 ]);
 
 export class Spargo {
     elements: spargoElement[] = [];
-    vdom: Vdom;
+    vdom: Vdom = new Vdom([], patch);
 
     constructor() {
-        this.vdom = new Vdom(this.elements, patch);
+        window.addEventListener("DOMContentLoaded", () => {
+            this.vdom = new Vdom(this.elements, patch);
 
-        this.initialize();
+            this.initialize();
+        });
     }
 
     /**

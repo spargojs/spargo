@@ -1,7 +1,7 @@
 import { h, VNode, VNodeData } from "snabbdom";
 import masks from "./masks";
 import { spargoElement, spargoElementObject } from "./types";
-import { generateProps, retrieveClasses, valueTruthyInObject } from "./utils";
+import { generateAttrs, generateProps, retrieveClasses, valueTruthyInObject } from "./utils";
 
 export class Vdom {
     elements: spargoElement[] = [];
@@ -37,6 +37,10 @@ export class Vdom {
                         return '';
                     }
 
+                    nodeData.props = generateProps({}, childElement);
+
+                    nodeData.attrs = generateAttrs({}, childElement);
+
                     nodeData.class = retrieveClasses(childElement);
 
                     switch (childElement.nodeName) {
@@ -62,7 +66,7 @@ export class Vdom {
 
                             const updateState = (e: Event) => { this.updateState(e) };
 
-                            nodeData.props = generateProps({ value, sync, mask }, childElement);
+                            nodeData.props = generateProps({ value, sync, mask, ...nodeData.props }, childElement);
                             nodeData.on = { input: updateState };
 
                             return this.generateVNode(child, childElement, object, nodeData);
@@ -195,6 +199,8 @@ export class Vdom {
         spargoElement.element = pureElement; // ? this.iterateOverLoops updates spargoElement.element and must be reset back
 
         if (updatedNodeChildren.length > 0 && spargoElement.vNode.sel && spargoElement.vNode.data) {
+            spargoElement.vNode.data = generateProps({}, spargoElement.element);
+
             const updatedNode = h(spargoElement.vNode.sel, spargoElement.vNode.data, updatedNodeChildren);
 
             this.patch(spargoElement.vNode, updatedNode);
@@ -286,7 +292,7 @@ export class Vdom {
      */
     private nodeWithTextContent(childElement: Element, nodeData: VNodeData): VNode | undefined {
         if (childElement.textContent?.trim() !== '' && childElement.children.length === 0) {
-            nodeData.props = generateProps({}, childElement);
+            nodeData.props = generateProps({ ...nodeData.props }, childElement);
 
             return h(childElement.nodeName, nodeData, childElement.textContent);
         }
@@ -308,7 +314,7 @@ export class Vdom {
                 throw new Error(`${textAttribute} does not exist in the object.`);
             }
 
-            nodeData.props = generateProps({ text: textAttribute }, childElement);
+            nodeData.props = generateProps({ text: textAttribute, ...nodeData.props }, childElement);
 
             return h(childElement.nodeName, nodeData, object[textAttribute]);
         }
