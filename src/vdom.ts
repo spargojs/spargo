@@ -14,6 +14,7 @@ export class Vdom {
         this.patch = patch;
     }
 
+    // noinspection TypeScriptValidateJSTypes
     /**
      * @description Generate snabbdom VNode's from an Element's children
      * @param children
@@ -83,9 +84,9 @@ export class Vdom {
 
     /**
      * @description Update the JavaScript state from an update to state and patch the view accordingly via the element
+     * @param spargoElementObject
      * @returns void
      * @throws If the associated element is not found in memory
-     * @param spargoElementObject
      */
     public updateByElement(spargoElementObject: spargoElementObject): void {
         const spargoElement = this.elements.find((element) => {
