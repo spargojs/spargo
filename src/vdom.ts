@@ -35,93 +35,17 @@ export class Vdom {
 
             switch (child.nodeType) {
                 case 1: { // Element
-                    const childElement = child as Element;
-
-                    if (this.shouldNotIncludeCheck(childElement, ifData, object)) {
-                        return '';
-                    }
-
-                    nodeData.props = generateProps({}, childElement);
-
-                    nodeData.attrs = generateAttrs({}, childElement);
-
-                    nodeData.class = retrieveClasses(childElement);
-
-                    switch (childElement.nodeName) {
-                        case 'INPUT': {
-                            const sync = childElement.getAttribute('@sync');
-
-                            if (!sync) {
-                                throw new Error(`It is expected that all input's are synced to a piece of data.`)
-                            }
-
-                            const value = object[sync];
-
-                            if (value === undefined && !Object.getOwnPropertyDescriptor(object, sync)?.set) {
-                                throw new Error(`${sync} does not exist.`);
-                            }
-
-                            const mask = childElement.getAttribute('@mask');
-
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            if (mask && (masks as any)[mask] === undefined) {
-                                throw new Error(`The @mask ${mask} does not exist.`);
-                            }
-
-                            const updateState = (e: Event) => {
-                                this.updateState(e)
-                            };
-
-                            nodeData.props = generateProps({value, sync, mask, ...nodeData.props}, childElement);
-                            nodeData.on = {input: updateState};
-
-                            return this.generateVNode(child, childElement, object, nodeData);
-                        }
-
-                        case 'BUTTON': {
-                            const click = childElement.getAttribute('@click');
-
-                            if (click) {
-                                const method = object[click];
-
-                                if (typeof method !== 'function') {
-                                    const methodWithParens = object[click.slice(0, -2)];
-
-                                    if (typeof methodWithParens !== 'function') {
-                                        throw new Error(`${click} was not found as a method`);
-                                    }
-                                }
-
-                                const runFunction = (e: Event) => {
-                                    let index = null;
-
-                                    if (e.target) {
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        const target = (e.target as any);
-
-                                        index = this.elements.findIndex(element => element.id === this.findSpargoParentNodeLocalName(target.parentNode));
-
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        (this.elements[index] as any).object[method ? click : click.slice(0, -2)]();
-                                    }
-                                };
-
-                                nodeData.on = {click: runFunction};
-                            }
-
-                            return this.generateVNode(child, childElement, object, nodeData);
-                        }
-
-                        default: {
-                            return this.generateVNode(child, childElement, object, nodeData);
-                        }
-                    }
+                    return this.generateVNodeForElement(child, ifData, object, nodeData);
                 }
                 case 3: // Text
                     return child.textContent || '';
 
                 default:
-                    return h(child.nodeName, nodeData, child.childNodes.length > 0 ? this.generateVNodes(child.childNodes, object) : []);
+                    return h(
+                        child.nodeName,
+                        nodeData,
+                        child.childNodes.length > 0 ? this.generateVNodes(child.childNodes, object) : []
+                    );
             }
         });
     }
@@ -144,30 +68,7 @@ export class Vdom {
                     throw new Error(`${objectKey.trim()} does not exist in the object.`)
                 }
 
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                object[objectKey.trim()].forEach((value: string | { [key: string]: any }) => {
-                    const newNode = child.cloneNode(true);
-
-                    newNode.childNodes.forEach((node) => {
-                        if (node.nodeType === 1 && (node as Element).hasAttribute('@text')) { // Element
-                            const text = (node as Element).getAttribute('@text');
-
-                            if (text) {
-                                if (name.trim() === '_') { // ? This means that the values will be dot notated
-                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    (node as any).innerText = (value as { [key: string]: any })[text];
-                                } else { // ? The values should just be the name
-                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    (node as any).innerText = value;
-                                }
-
-                                (node as Element).removeAttribute('@text');
-                            }
-                        }
-                    });
-
-                    child.before(newNode);
-                });
+                this.loopNodeCreations(child, object, objectKey, name);
 
                 child.parentElement?.removeAttribute('@for');
 
@@ -217,6 +118,162 @@ export class Vdom {
             spargoElement.vNode = updatedNode;
         }
 
+    }
+
+    private loopNodeCreations(child: Element, object: spargoElementObject, objectKey: string, name: string) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        object[objectKey.trim()].forEach((value: string | { [key: string]: any }) => {
+            const newNode = child.cloneNode(true);
+
+            newNode.childNodes.forEach((node) => {
+                if (node.nodeType === 1 && (node as Element).hasAttribute('@text')) { // Element
+                    const text = (node as Element).getAttribute('@text');
+
+                    if (text) {
+                        if (name.trim() === '_') { // ? This means that the values will be dot notated
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            (node as any).innerText = (value as { [key: string]: any })[text];
+                        } else { // ? The values should just be the name
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            (node as any).innerText = value;
+                        }
+
+                        (node as Element).removeAttribute('@text');
+                    }
+                }
+            });
+
+            child.before(newNode);
+        });
+    }
+
+    /*
+    * @description Generate a Vnode for an element
+    * @param child
+    * @param ifData
+    * @param object
+    * @param nodeData
+    * @returns VNode | string
+    */
+    private generateVNodeForElement(
+        child: ChildNode,
+        ifData: { ifIsFalse: boolean, elseIfIsFalse: boolean, elseIfPresent: boolean },
+        object: spargoElementObject,
+        nodeData: VNodeData
+    ): VNode | string {
+        const childElement = child as Element;
+
+        if (this.shouldNotIncludeCheck(childElement, ifData, object)) {
+            return '';
+        }
+
+        nodeData.props = generateProps({}, childElement);
+
+        nodeData.attrs = generateAttrs({}, childElement);
+
+        nodeData.class = retrieveClasses(childElement);
+
+        switch (childElement.nodeName) {
+            case 'INPUT': {
+                const props = this.generateInputProps(childElement, object);
+
+                const updateState = (e: Event) => {
+                    this.updateState(e)
+                };
+
+                nodeData.props = generateProps({...props, ...nodeData.props}, childElement);
+                nodeData.on = {input: updateState};
+
+                return this.generateVNode(child, childElement, object, nodeData);
+            }
+
+            case 'BUTTON': {
+                this.attachListenersToButton(childElement, object, nodeData);
+
+                return this.generateVNode(child, childElement, object, nodeData);
+            }
+
+            default: {
+                return this.generateVNode(child, childElement, object, nodeData);
+            }
+        }
+    }
+
+    /*
+   * @description Attach listeners to a button
+   * @param childElement
+   * @param object
+   * @param nodeData - possibly mutated
+   * @returns void
+   */
+    private attachListenersToButton(childElement: Element, object: spargoElementObject, nodeData: VNodeData): void {
+        const click = childElement.getAttribute('@click');
+
+        if (click) {
+            const method = object[click];
+
+            if (typeof method !== 'function') {
+                const methodWithParens = object[click.slice(0, -2)];
+
+                if (typeof methodWithParens !== 'function') {
+                    throw new Error(`${click} was not found as a method`);
+                }
+            }
+
+            const runFunction = (e: Event) => {
+                let index = null;
+
+                if (e.target) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const target = (e.target as any);
+
+                    index = this.elements.findIndex(element =>
+                        element.id === this.findSpargoParentNodeLocalName(target.parentNode));
+
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (this.elements[index] as any).object[method ? click : click.slice(0, -2)]();
+                }
+            };
+
+            nodeData.on = {click: runFunction};
+        }
+    }
+
+    /*
+    * @description Generate custom props for an input
+    * @param childElement
+    * @param object
+    * @returns {
+        value: string | null,
+        sync: string | null,
+        mask: string | null
+    }
+    */
+    private generateInputProps(childElement: Element, object: spargoElementObject): {
+        value: string | null,
+        sync: string | null,
+        mask: string | null
+    } {
+        const sync = childElement.getAttribute('@sync');
+
+        if (!sync) {
+            throw new Error(`It is expected that all input's are synced to a piece of data.`)
+        }
+
+        const value = object[sync];
+
+        if (value === undefined && !Object.getOwnPropertyDescriptor(object, sync)?.set) {
+            throw new Error(`${sync} does not exist.`);
+        }
+
+        const mask = childElement.getAttribute('@mask');
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (mask && (masks as any)[mask] === undefined) {
+            throw new Error(`The @mask ${mask} does not exist.`);
+        }
+
+        return {value, sync, mask};
     }
 
     /**
