@@ -120,7 +120,15 @@ export class Vdom {
 
     }
 
-    private loopNodeCreations(child: Element, object: spargoElementObject, objectKey: string, name: string) {
+    /*
+    * @description Generate nodes for @for
+    * @param child
+    * @param object
+    * @param objectKey
+    * @param name
+    * @returns void
+    */
+    private loopNodeCreations(child: Element, object: spargoElementObject, objectKey: string, name: string): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         object[objectKey.trim()].forEach((value: string | { [key: string]: any }) => {
             const newNode = child.cloneNode(true);
