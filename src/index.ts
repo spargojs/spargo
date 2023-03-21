@@ -1,3 +1,3 @@
-import { Spargo } from './spargo';
+import {Spargo} from './spargo';
 
 export default Spargo;

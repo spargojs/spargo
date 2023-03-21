@@ -1,16 +1,16 @@
 import {
-    init,
-    classModule,
-    propsModule,
-    styleModule, // TODO: Must implement
-    eventListenersModule,
     attributesModule,
+    classModule,
+    eventListenersModule,
     h,
+    init,
+    propsModule,
+    styleModule,
     toVNode,
 } from "snabbdom";
-import { spargoElement, spargoElementObject } from "./types";
-import { retrieveClasses } from "./utils";
-import { Vdom } from "./vdom";
+import {spargoElement, spargoElementObject} from "./types";
+import {retrieveClasses} from "./utils";
+import {Vdom} from "./vdom";
 
 const patch = init([
     classModule,
@@ -48,7 +48,7 @@ export class Spargo {
 
     /**
      * @description Create a new element
-     * @param element 
+     * @param element
      * @returns void
      * @throws Error if the provided element does not have an associated method
      */
@@ -62,12 +62,12 @@ export class Spargo {
 
         /**
          * element.getAttribute('ignite') - implicitly any
-         * window[element.getAttribute('ignite')])() - typscript
+         * window[element.getAttribute('ignite')])() - typescript
          * isn't aware this is a method
-         * 
+         *
          * We will grab the javascript object that is associated with the element
          */
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const object: spargoElementObject = ((window as any)[element.getAttribute('ignite') as string])();
 
         if (!object) {
@@ -78,9 +78,14 @@ export class Spargo {
 
         const pureElement = element.cloneNode(true) as Element;
 
-        this.vdom.iterateOverLoops(element, object); // ? Manipulates element for the this.generateVNodes method call below
+        // ? Manipulates element for the this.generateVNodes method call below
+        this.vdom.iterateOverLoops(element, object);
 
-        const node = h(id, { class: retrieveClasses(element) }, this.vdom.generateVNodes(element.childNodes, object));
+        const node = h(
+            id,
+            {class: retrieveClasses(element)},
+            this.vdom.generateVNodes(element.childNodes, object)
+        );
 
         patch(toVNode(element), node);
 
@@ -97,7 +102,7 @@ export class Spargo {
             }
         });
 
-        this.elements.push({ id, vNode: node, object: objectProxy, element: pureElement });
+        this.elements.push({id, vNode: node, object: objectProxy, element: pureElement});
 
         if (typeof objectProxy.ignited === 'function') {
             objectProxy.ignited();
