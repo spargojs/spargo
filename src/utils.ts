@@ -1,10 +1,10 @@
-import { Attrs, Classes, Props } from "snabbdom";
-import { spargoElementObject } from "./types";
+import {Attrs, Classes, Props} from "snabbdom";
+import {spargoElementObject} from "./types";
 
 /**
  * @description Check for the truthiness of the provided value within the object.
- * @param value 
- * @param object 
+ * @param value
+ * @param object
  * @returns  boolean
  * @throws If the provided value is not found within the object
  */
@@ -31,8 +31,8 @@ function valueTruthyInObject(value: string, object: spargoElementObject): boolea
 
 /**
  * @description Retrieves the props of the element in the format that snabbdom expects
- * @param object 
- * @param element 
+ * @param object
+ * @param element
  * @returns object
  */
 function generateProps(object: object, element: Element): Props {
@@ -92,13 +92,13 @@ function generateProps(object: object, element: Element): Props {
         }
     });
 
-    return { ...expandedObject, ...object };
+    return {...expandedObject, ...object};
 }
 
 /**
  * @description Retrieves the attrs of the element in the format that snabbdom expects
- * @param object 
- * @param element 
+ * @param object
+ * @param element
  * @returns object
  */
 function generateAttrs(object: object, element: Element): Attrs {
@@ -129,12 +129,12 @@ function generateAttrs(object: object, element: Element): Attrs {
         }
     });
 
-    return { ...expandedObject, ...object };
+    return {...expandedObject, ...object};
 }
 
 /**
  * @description Retrieves the classes of the element in the format that snabbdom expects
- * @param element 
+ * @param element
  * @returns Classes
  */
 function retrieveClasses(element: Element): Classes {
@@ -153,4 +153,4 @@ function retrieveClasses(element: Element): Classes {
     return classesObject;
 }
 
-export { valueTruthyInObject, generateProps, generateAttrs, retrieveClasses };
+export {valueTruthyInObject, generateProps, generateAttrs, retrieveClasses};

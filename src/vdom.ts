@@ -1,23 +1,27 @@
-import { h, VNode, VNodeData } from "snabbdom";
+import {h, VNode, VNodeData} from "snabbdom";
 import masks from "./masks";
-import { spargoElement, spargoElementObject } from "./types";
-import { generateAttrs, generateProps, retrieveClasses, valueTruthyInObject } from "./utils";
+import {spargoElement, spargoElementObject} from "./types";
+import {generateAttrs, generateProps, retrieveClasses, valueTruthyInObject} from "./utils";
 
 export class Vdom {
     elements: spargoElement[] = [];
     patch: (oldVnode: Element | VNode | DocumentFragment, vnode: VNode) => VNode;
 
-    constructor(elements: spargoElement[], patch: (oldVnode: Element | VNode | DocumentFragment, vnode: VNode) => VNode) {
+    constructor(
+        elements: spargoElement[],
+        patch: (oldVnode: Element | VNode | DocumentFragment, vnode: VNode) => VNode) {
         this.elements = elements;
         this.patch = patch;
     }
 
     /**
      * @description Generate snabbdom VNode's from an Element's children
-     * @param children 
-     * @param object 
+     * @param children
+     * @param object
      * @returns (string | VNode)[]
-     * @throws If an input is not synced to a piece of state, or if the synced value does not exist, or if the mask does not exist
+     * @throws If an input is not synced to a piece of state
+     * @throws If a synced value does not exist
+     * @throws If a mask does not exist
      */
     public generateVNodes(children: NodeListOf<ChildNode>, object: spargoElementObject): (string | VNode)[] {
         const ifData = {
@@ -64,10 +68,12 @@ export class Vdom {
                                 throw new Error(`The @mask ${mask} does not exist.`);
                             }
 
-                            const updateState = (e: Event) => { this.updateState(e) };
+                            const updateState = (e: Event) => {
+                                this.updateState(e)
+                            };
 
-                            nodeData.props = generateProps({ value, sync, mask, ...nodeData.props }, childElement);
-                            nodeData.on = { input: updateState };
+                            nodeData.props = generateProps({value, sync, mask, ...nodeData.props}, childElement);
+                            nodeData.on = {input: updateState};
 
                             return this.generateVNode(child, childElement, object, nodeData);
                         }
@@ -100,7 +106,7 @@ export class Vdom {
                                     }
                                 };
 
-                                nodeData.on = { click: runFunction };
+                                nodeData.on = {click: runFunction};
                             }
 
                             return this.generateVNode(child, childElement, object, nodeData);
@@ -122,8 +128,8 @@ export class Vdom {
 
     /**
      * @description Prepares the given element to pass through the generateVNodes method
-     * @param element 
-     * @param object 
+     * @param element
+     * @param object
      * @returns void
      * @throws If the provided piece of state to iterate over does not exist
      */
@@ -175,12 +181,11 @@ export class Vdom {
     }
 
     /**
-    * @description Update the JavaScript state from an update to state and patch the view accordingly via the element
-    * @param e
-    * @param index
-    * @returns void
-    * @throws If the associated element is not found in memory
-    */
+     * @description Update the JavaScript state from an update to state and patch the view accordingly via the element
+     * @returns void
+     * @throws If the associated element is not found in memory
+     * @param spargoElementObject
+     */
     public updateByElement(spargoElementObject: spargoElementObject): void {
         const spargoElement = this.elements.find((element) => {
             return element.object === spargoElementObject;
@@ -194,9 +199,13 @@ export class Vdom {
 
         this.iterateOverLoops(spargoElement.element, spargoElement.object);
 
-        const updatedNodeChildren: (string | VNode)[] = this.generateVNodes(spargoElement.element.childNodes, spargoElement.object);
+        const updatedNodeChildren: (string | VNode)[] = this.generateVNodes(
+            spargoElement.element.childNodes,
+            spargoElement.object
+        );
 
-        spargoElement.element = pureElement; // ? this.iterateOverLoops updates spargoElement.element and must be reset back
+        // ? this.iterateOverLoops updates spargoElement.element and must be reset back
+        spargoElement.element = pureElement;
 
         if (updatedNodeChildren.length > 0 && spargoElement.vNode.sel && spargoElement.vNode.data) {
             spargoElement.vNode.data = generateProps({}, spargoElement.element);
@@ -212,12 +221,16 @@ export class Vdom {
 
     /**
      * @description Checks if the provided element should not be included in the dom
-     * @param childElement 
-     * @param ifData 
-     * @param object 
+     * @param childElement
+     * @param ifData
+     * @param object
      * @returns boolean
      */
-    private shouldNotIncludeCheck(childElement: Element, ifData: { ifIsFalse: boolean, elseIfIsFalse: boolean, elseIfPresent: boolean }, object: spargoElementObject): boolean {
+    private shouldNotIncludeCheck(
+        childElement: Element,
+        ifData: { ifIsFalse: boolean, elseIfIsFalse: boolean, elseIfPresent: boolean },
+        object: spargoElementObject
+    ): boolean {
         const ifCheck = childElement.getAttribute('@if');
 
         if (ifCheck && !valueTruthyInObject(ifCheck, object)) {
@@ -268,7 +281,12 @@ export class Vdom {
      * @param nodeData
      * @returns VNode
      */
-    private generateVNode(child: ChildNode, childElement: Element, object: spargoElementObject, nodeData: VNodeData): VNode {
+    private generateVNode(
+        child: ChildNode,
+        childElement: Element,
+        object: spargoElementObject,
+        nodeData: VNodeData
+    ): VNode {
         const textNode = this.textNode(childElement, object, nodeData);
 
         if (textNode) {
@@ -281,7 +299,11 @@ export class Vdom {
             return nodeWithTextContent;
         }
 
-        return h(child.nodeName, nodeData, child.childNodes.length > 0 ? this.generateVNodes(child.childNodes, object) : []);
+        return h(
+            child.nodeName,
+            nodeData,
+            child.childNodes.length > 0 ? this.generateVNodes(child.childNodes, object) : []
+        );
     }
 
     /**
@@ -292,7 +314,7 @@ export class Vdom {
      */
     private nodeWithTextContent(childElement: Element, nodeData: VNodeData): VNode | undefined {
         if (childElement.textContent?.trim() !== '' && childElement.children.length === 0) {
-            nodeData.props = generateProps({ ...nodeData.props }, childElement);
+            nodeData.props = generateProps({...nodeData.props}, childElement);
 
             return h(childElement.nodeName, nodeData, childElement.textContent);
         }
@@ -314,7 +336,7 @@ export class Vdom {
                 throw new Error(`${textAttribute} does not exist in the object.`);
             }
 
-            nodeData.props = generateProps({ text: textAttribute, ...nodeData.props }, childElement);
+            nodeData.props = generateProps({text: textAttribute, ...nodeData.props}, childElement);
 
             return h(childElement.nodeName, nodeData, object[textAttribute]);
         }
@@ -331,7 +353,9 @@ export class Vdom {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const target = (e.target as any);
 
-            const index = this.elements.findIndex(element => element.id === this.findSpargoParentNodeLocalName(target.parentNode));
+            const index = this.elements.findIndex(
+                element => element.id === this.findSpargoParentNodeLocalName(target.parentNode)
+            );
 
             if (index < 0) {
                 throw new Error(`Element with id of ${target.parentNode.localName} not found in memory`);
@@ -345,7 +369,7 @@ export class Vdom {
 
     /**
      * @description Hunt down the snabbdom .sel for the given element
-     * @param element 
+     * @param element
      * @returns string
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -361,16 +385,16 @@ export class Vdom {
 
     /**
      * @description Generate new snabbdom nodes with updated values and update any necessary JavaScript state
-     * @param nodes 
+     * @param nodes
      * @param element
-     * @param e 
+     * @param e
      * @returns void
      */
     private retrieveNodeChildren(nodes: (string | VNode)[] | undefined, element: spargoElement, e: Event): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const target = e.target as any;
 
-        const object = element.object as spargoElementObject;
+        const object = element.object;
 
         nodes?.map((childNode: string | VNode) => {
             if (typeof childNode !== 'string' && childNode.children && childNode.children.length > 0) {

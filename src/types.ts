@@ -1,4 +1,4 @@
-import { VNode } from "snabbdom";
+import {VNode} from "snabbdom";
 
 type ignited = () => void;
 
@@ -12,4 +12,4 @@ type spargoElement = {
     object: spargoElementObject
 }
 
-export { ignited, spargoElementObject, spargoElement };
+export {ignited, spargoElementObject, spargoElement};
