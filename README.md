@@ -193,20 +193,61 @@ Similar to Vue's v-for, it is used to iterate over a piece of state and display 
 
 Used to automatically format a text input field as a user types. Right now, there are only certain options:
 
-1. phone
-2. currency (*coming soon*)
-3. time (*coming soon*)
-4. zip (*coming soon*)
+1. phone (US Format)
+2. currency (Any Format)
+3. date (US Format, mm/dd/yyyy)
 
 ```html
 <div ignite="home">
-    <!-- As the user types, the value will be masked and updated to a properly formatted phone number -->
-    <input type="tel" id="mask" name="mask" placeholder="Phone" @sync="mask" @mask="phone" />
+    <!-- As the user types, the value will be masked and updated 
+         to a properly formatted US phone number -->
+    <input 
+        type="tel" 
+        id="mask-phone" 
+        name="mask-phone" 
+        placeholder="Phone" 
+        @sync="maskPhone" 
+        @mask="phone" 
+    />
+    <!-- As the user types, the value will be masked and updated 
+         to a properly formatted US currency value -->
+    <input 
+        type="text" 
+        id="mask-currency-usd" 
+        name="mask-currency-usd" 
+        placeholder="USD" 
+        @sync="maskCurrencyUsd" 
+        @mask="currency" 
+    />
+    <!-- You may pass arguments to the currency mask via @mask-args.
+         It is a pipe (|) delimited string of {local}|{currency} -->
+    <input
+        type="text"
+        id="mask-currency-gbp"
+        name="mask-currency-gbp"
+        placeholder="GBP"
+        @sync="maskCurrencyGbp"
+        @mask="currency"
+        @mask-args="en-GB|GBP"
+    />
+    <!-- As the user types, the value will be masked and updated 
+         to a properly formatted US date (mm/dd/yyyy) -->
+    <input
+        type="text"
+        id="mask-date"
+        name="mask-date"
+        placeholder="Date"
+        @sync="date"
+        @mask="date"
+    />
 </div>
 <script nonce="someRandomNonce">
     function home() {
         return {
-            mask: '',
+            maskPhone: '',
+            maskCurrencyUsd: '',
+            maskCurrencyGbp: '',
+            date: '',
         }
     }
 </script>
