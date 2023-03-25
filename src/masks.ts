@@ -15,8 +15,40 @@ const phone = (value: string): string => {
     return value;
 };
 
+const currency = (value: string, args?: string): string => {
+    const [format, currency] = args?.split('|') || '';
+
+    const strippedValue = value
+        .replace('.', '')
+        .replace(',', '')
+        .replace(/\D/g, '');
+
+    const float = +(strippedValue);
+
+    if (isNaN(float)) {
+        throw new Error(`Value provided to currency is not a number: ${value}`);
+    }
+
+    return new Intl.NumberFormat(format || 'en-US', {
+        currency: currency || 'USD',
+        style: 'currency',
+    }).format(float / 100);
+}
+
+const date = (value: string): string => {
+    const strippedValue = value.replace(/\D/g, '').slice(0, 10);
+    if (strippedValue.length >= 5) {
+        return `${strippedValue.slice(0, 2)}/${strippedValue.slice(2, 4)}/${strippedValue.slice(4, 8)}`;
+    } else if (strippedValue.length >= 3) {
+        return `${strippedValue.slice(0, 2)}/${strippedValue.slice(2)}`;
+    }
+    return strippedValue;
+}
+
 const masks = {
-    phone
+    phone,
+    currency,
+    date
 }
 
 export default masks

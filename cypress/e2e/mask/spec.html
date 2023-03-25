@@ -2,10 +2,10 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Content-Security-Policy"
-        content="script-src 'nonce-jFdn249Fnwelk429Df932jS3U2' 'self' data:; default-src 'self'; style-src https://cdn.tailwindcss.com 'unsafe-inline'">
+          content="script-src 'nonce-jFdn249Fnwelk429Df932jS3U2' 'self' data:; default-src 'self'; style-src https://cdn.tailwindcss.com 'unsafe-inline'">
     <title>Spargo Test</title>
     <script src="../../../../dist/cdn.js" defer></script>
     <script src="https://cdn.tailwindcss.com" nonce="jFdn249Fnwelk429Df932jS3U2"></script>
@@ -16,9 +16,20 @@
         <div class="mt-4">
             <h1 class="text-2xl my-4">@mask</h1>
             <input type="tel" id="mask"
-                class="rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-stone-600 focus:border-transparent"
-                name="mask" placeholder="Phone" @sync="mask" @mask="phone" />
+                   class="rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-stone-600 focus:border-transparent"
+                   name="mask" placeholder="Phone" @sync="mask" @mask="phone"/>
+            <input type="text" id="mask-currency"
+                   class="rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-stone-600 focus:border-transparent mt-4"
+                   name="mask-currency" placeholder="Currency" @sync="currency" @mask="currency"/>
+            <input type="text" id="mask-currency-gbp"
+                   class="rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-stone-600 focus:border-transparent mt-4"
+                   name="mask-currency-gbp" placeholder="Currency GBP" @sync="currencyGBP" @mask="currency"
+                   @mask-args="en-GB|GBP"/>
+            <input type="text" id="mask-date"
+                   class="rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-stone-600 focus:border-transparent mt-4"
+                   name="mask-date" placeholder="Date" @sync="date" @mask="date"/>
         </div>
+    </div>
 </body>
 
 </html>
@@ -26,6 +37,9 @@
     function home() {
         return {
             mask: '',
+            currency: '',
+            currencyGBP: '',
+            date: '',
         }
     }
 </script>

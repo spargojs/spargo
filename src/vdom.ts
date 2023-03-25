@@ -255,13 +255,15 @@ export class Vdom {
     * @returns {
         value: string | null,
         sync: string | null,
-        mask: string | null
+        mask: string | null,
+        maskArgs: string | null,
     }
     */
     private generateInputProps(childElement: Element, object: spargoElementObject): {
         value: string | null,
         sync: string | null,
-        mask: string | null
+        mask: string | null,
+        maskArgs: string | null,
     } {
         const sync = childElement.getAttribute('@sync');
 
@@ -282,7 +284,9 @@ export class Vdom {
             throw new Error(`The @mask ${mask} does not exist.`);
         }
 
-        return {value, sync, mask};
+        const maskArgs = childElement.getAttribute('@mask-args');
+
+        return {value, sync, mask, maskArgs};
     }
 
     /**
@@ -469,8 +473,14 @@ export class Vdom {
             } else if (typeof childNode !== 'string' && childNode.data && childNode.data.props && childNode.data.props['sync'] && childNode.data.props['sync'] === target.sync) {
                 // update sync value in object
                 if (childNode.data.props['mask']) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    object[childNode.data.props['sync']] = (masks as any)[childNode.data.props['mask']](target.value);
+                    if (childNode.data.props['maskArgs']) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        object[childNode.data.props['sync']] = (masks as any)[childNode.data.props['mask']](target.value, childNode.data.props['maskArgs']);
+                    } else {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        object[childNode.data.props['sync']] = (masks as any)[childNode.data.props['mask']](target.value);
+                    }
+
                     target.value = object[childNode.data.props['sync']]; // Update the value of the target (input) to the masked value
                 } else {
                     object[childNode.data.props['sync']] = target.value;
