@@ -1,6 +1,6 @@
 {
   "name": "spargo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The lightweight JavaScript framework for inserting a little reactivity into some markup.",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
