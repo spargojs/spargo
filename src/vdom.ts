@@ -180,7 +180,7 @@ export class Vdom {
 
         nodeData.attrs = generateAttrs({}, childElement);
 
-        nodeData.class = retrieveClasses(childElement);
+        nodeData.class = retrieveClasses(childElement, object);
 
         switch (childElement.nodeName) {
             case 'INPUT': {

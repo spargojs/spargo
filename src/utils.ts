@@ -139,15 +139,26 @@ function generateAttrs(object: object, element: Element): Attrs {
 /**
  * @description Retrieves the classes of the element in the format that snabbdom expects
  * @param element
+ * @param object
  * @returns Classes
  */
-function retrieveClasses(element: Element): Classes {
+function retrieveClasses(element: Element, object: spargoElementObject): Classes {
     const classes = element.getAttribute('class');
+    const classAttr = element.getAttribute('@class');
+    let customClasses = null;
 
     const classesObject: { [key: string]: boolean } = {};
 
-    if (classes) {
-        classes.split(' ')
+    if (classAttr) {
+        customClasses = object[classAttr];
+
+        if (customClasses === undefined) {
+            throw new Error(`Could not find ${classAttr} in the object.`);
+        }
+    }
+
+    if (classes || customClasses) {
+        ((classes || '') + (customClasses ? ' ' + customClasses : '')).split(' ')
             .filter((classString: string) => classString.trim() !== '')
             .forEach((classString: string) => {
                 classesObject[classString] = true;
