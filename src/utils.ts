@@ -110,7 +110,11 @@ function generateAttrs(object: object, element: Element): Attrs {
         'stroke',
         'stroke-linecap',
         'stroke-linejoin',
-        'd'
+        'd',
+        'x1',
+        'x2',
+        'y1',
+        'y2'
     ];
 
     const expandedObject: Attrs = {};
