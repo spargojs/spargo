@@ -145,15 +145,21 @@ function generateAttrs(object: object, element: Element): Attrs {
 function retrieveClasses(element: Element, object: spargoElementObject): Classes {
     const classes = element.getAttribute('class');
     const classAttr = element.getAttribute('@class');
-    let customClasses = null;
+    let customClasses, check = null;
 
     const classesObject: { [key: string]: boolean } = {};
 
     if (classAttr) {
-        customClasses = object[classAttr];
+        [check, customClasses] = classAttr.split('=>');
 
-        if (customClasses === undefined) {
-            throw new Error(`Could not find ${classAttr} in the object.`);
+        if (customClasses === undefined && check === undefined) {
+            throw new Error('Truth check and classes must be provided when @class is set. Please remove if not needed.');
+        } else if (check && customClasses === undefined) {
+            throw new Error(`Classes must be provided after the => for truth check ${check}`);
+        } else if (check === undefined) {
+            throw new Error('A truth check must be provided before the => in @class');
+        } else {
+            customClasses = valueTruthyInObject(check.trim(), object) ? customClasses : null;
         }
     }
 
