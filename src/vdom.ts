@@ -135,7 +135,7 @@ export class Vdom {
             const newNode = child.cloneNode(true);
 
             newNode.childNodes.forEach((node) => {
-                if (node.nodeType === 1 && (node as Element).hasAttribute('@text')) { // Element
+                if (node.nodeType === 1 && (node as Element).hasAttribute('@text')) { // Element @text
                     const text = (node as Element).getAttribute('@text');
 
                     if (text) {
@@ -149,6 +149,43 @@ export class Vdom {
 
                         (node as Element).removeAttribute('@text');
                     }
+                }
+
+                if (node.nodeType === 1 && (node as Element).hasAttribute('@if')) { // Element @if
+                    const ifAttr = (node as Element).getAttribute('@if') as string;
+
+                    if (!valueTruthyInObject(ifAttr, value as spargoElementObject)) {
+                        node.remove();
+                    } else {
+                        (node as Element).removeAttribute('@if');
+                    }
+                }
+
+                if (node.nodeType === 1 && (node as Element).hasAttribute('@class')) { // Element @class
+                    const classes = (node as Element).getAttribute('class');
+                    const classAttr = (node as Element).getAttribute('@class') as string;
+                    let customClasses, check;
+
+                    [check, customClasses] = classAttr.split('=>');
+
+                    if (customClasses === undefined && check === undefined) {
+                        throw new Error('Truth check and classes must be provided when @class is set. Please remove if not needed.');
+                    } else if (check && customClasses === undefined) {
+                        throw new Error(`Classes must be provided after the => for truth check ${check}`);
+                    } else if (check === undefined) {
+                        throw new Error('A truth check must be provided before the => in @class');
+                    } else {
+                        customClasses = valueTruthyInObject(check.trim(), value as spargoElementObject) ? customClasses : null;
+                    }
+
+                    if (classes || customClasses) {
+                        (node as Element).setAttribute(
+                            'class',
+                            ((classes || '') + (customClasses ? ' ' + customClasses : ''))
+                        );
+                    }
+
+                    (node as Element).removeAttribute('@class');
                 }
             });
 
