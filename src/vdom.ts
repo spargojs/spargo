@@ -166,6 +166,7 @@ export class Vdom {
                     const classAttr = (node as Element).getAttribute('@class') as string;
                     let customClasses, check;
 
+                    // eslint-disable-next-line prefer-const
                     [check, customClasses] = classAttr.split('=>');
 
                     if (customClasses === undefined && check === undefined) {
