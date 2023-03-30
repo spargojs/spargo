@@ -161,6 +161,19 @@ export class Vdom {
                     }
                 }
 
+                if (node.nodeType === 1 && (node as Element).hasAttribute('@href')) { // Element @href
+                    const hrefAttr = (node as Element).getAttribute('@href') as string;
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const hrefString: string = (value as any)[hrefAttr];
+
+                    if (hrefString === undefined) {
+                        throw new Error(`${hrefAttr} not found in this iteration.`);
+                    }
+
+                    (node as Element).setAttribute('href', hrefString);
+                    (node as Element).removeAttribute('@href');
+                }
+
                 if (node.nodeType === 1 && (node as Element).hasAttribute('@class')) { // Element @class
                     const classes = (node as Element).getAttribute('class');
                     const classAttr = (node as Element).getAttribute('@class') as string;
@@ -212,6 +225,16 @@ export class Vdom {
 
         if (this.shouldNotIncludeCheck(childElement, ifData, object)) {
             return '';
+        }
+
+        const customHrefAttr = childElement.getAttribute('@href');
+
+        if (customHrefAttr) {
+            if (object[customHrefAttr] === undefined) {
+                throw new Error(`Could not find ${customHrefAttr} in the object.`)
+            } else {
+                childElement.setAttribute('href', object[customHrefAttr]);
+            }
         }
 
         nodeData.props = generateProps({}, childElement);

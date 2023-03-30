@@ -159,7 +159,13 @@ function retrieveClasses(element: Element, object: spargoElementObject): Classes
         } else if (check === undefined) {
             throw new Error('A truth check must be provided before the => in @class');
         } else {
-            customClasses = valueTruthyInObject(check.trim(), object) ? customClasses : null;
+            const [ifTrueClasses, ifFalseClasses] = customClasses.split('||');
+
+            if (valueTruthyInObject(check.trim(), object)) {
+                customClasses = ifTrueClasses;
+            } else {
+                customClasses = ifFalseClasses;
+            }
         }
     }
 

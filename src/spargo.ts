@@ -83,7 +83,7 @@ export class Spargo {
 
         const node = h(
             id,
-            {class: retrieveClasses(element)},
+            {class: retrieveClasses(element, object)},
             this.vdom.generateVNodes(element.childNodes, object)
         );
 
