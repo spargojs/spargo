@@ -228,7 +228,13 @@ export class Vdom {
             } else if (check === undefined) {
                 throw new Error('A truth check must be provided before the => in @class');
             } else {
-                customClasses = valueTruthyInObject(check.trim(), value as spargoElementObject) ? customClasses : null;
+                const [ifTrueClasses, ifFalseClasses] = customClasses.split('||');
+
+                if (valueTruthyInObject(check.trim(), value as spargoElementObject)) {
+                    customClasses = ifTrueClasses;
+                } else {
+                    customClasses = ifFalseClasses;
+                }
             }
 
             if (classes || customClasses) {
