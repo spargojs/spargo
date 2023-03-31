@@ -2,11 +2,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const {Generator} = require('npm-dts');
 
-new Generator({
-    entry: 'src/index.ts',
-    output: 'dist/index.d.ts',
-}).generate();
-
 const drop = ['debugger'];
 
 if (!process.argv.includes('--watch')) {
@@ -65,6 +60,11 @@ build({
 
 async function build(options) {
     try {
+        await new Generator({
+            entry: 'src/index.ts',
+            output: 'dist/index.d.ts',
+        }).generate();
+
         if (process.argv.includes('--watch')) {
             const ctx = await require('esbuild').context({
                 ...options,

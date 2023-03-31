@@ -135,25 +135,111 @@ export class Vdom {
             const newNode = child.cloneNode(true);
 
             newNode.childNodes.forEach((node) => {
-                if (node.nodeType === 1 && (node as Element).hasAttribute('@text')) { // Element
-                    const text = (node as Element).getAttribute('@text');
-
-                    if (text) {
-                        if (name.trim() === '_') { // ? This means that the values will be dot notated
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            (node as any).innerText = (value as { [key: string]: any })[text];
-                        } else { // ? The values should just be the name
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            (node as any).innerText = value;
-                        }
-
-                        (node as Element).removeAttribute('@text');
-                    }
+                if (node.nodeType === 1) { // Element
+                    this.updateLoopElement(node as Element, value, name);
                 }
             });
 
             child.before(newNode);
         });
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private updateLoopElement(node: Element, value: string | { [key: string]: any }, name: string) {
+        this.handleLoopTextAttr(node, value, name);
+
+        this.handleLoopHrefAttr(node, value);
+
+        this.handleLoopIfAttr(node, value);
+
+        this.handleLoopClassAttr(node, value);
+
+        if (node.hasChildNodes()) {
+            node.childNodes.forEach((node) => {
+                if (node.nodeType === 1) { // Element
+                    this.updateLoopElement(node as Element, value, name);
+                }
+            });
+        }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private handleLoopTextAttr(node: Element, value: string | { [key: string]: any }, name: string) {
+        if (node.hasAttribute('@text')) {
+            const text = node.getAttribute('@text');
+
+            if (text) {
+                if (name.trim() === '_') { // ? This means that the values will be dot notated
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (node as any).innerText = (value as { [key: string]: any })[text];
+                } else { // ? The values should just be the name
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (node as any).innerText = value;
+                }
+
+                node.removeAttribute('@text');
+            }
+        }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private handleLoopHrefAttr(node: Element, value: string | { [key: string]: any }) {
+        if (node.hasAttribute('@href')) { // Element @href
+            const hrefAttr = node.getAttribute('@href') as string;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const hrefString: string = (value as any)[hrefAttr];
+
+            if (hrefString === undefined) {
+                throw new Error(`${hrefAttr} not found in this iteration.`);
+            }
+
+            node.setAttribute('href', hrefString);
+            node.removeAttribute('@href');
+        }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private handleLoopIfAttr(node: Element, value: string | { [key: string]: any }) {
+        if (node.hasAttribute('@if')) { // Element @if
+            const ifAttr = node.getAttribute('@if') as string;
+
+            if (!valueTruthyInObject(ifAttr, value as spargoElementObject)) {
+                node.remove();
+            } else {
+                node.removeAttribute('@if');
+            }
+        }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private handleLoopClassAttr(node: Element, value: string | { [key: string]: any }) {
+        if (node.hasAttribute('@class')) { // Element @class
+            const classes = node.getAttribute('class');
+            const classAttr = node.getAttribute('@class') as string;
+            let customClasses, check;
+
+            // eslint-disable-next-line prefer-const
+            [check, customClasses] = classAttr.split('=>');
+
+            if (customClasses === undefined && check === undefined) {
+                throw new Error('Truth check and classes must be provided when @class is set. Please remove if not needed.');
+            } else if (check && customClasses === undefined) {
+                throw new Error(`Classes must be provided after the => for truth check ${check}`);
+            } else if (check === undefined) {
+                throw new Error('A truth check must be provided before the => in @class');
+            } else {
+                customClasses = valueTruthyInObject(check.trim(), value as spargoElementObject) ? customClasses : null;
+            }
+
+            if (classes || customClasses) {
+                node.setAttribute(
+                    'class',
+                    ((classes || '') + (customClasses ? ' ' + customClasses : ''))
+                );
+            }
+
+            node.removeAttribute('@class');
+        }
     }
 
     /*
@@ -176,11 +262,21 @@ export class Vdom {
             return '';
         }
 
+        const customHrefAttr = childElement.getAttribute('@href');
+
+        if (customHrefAttr) {
+            if (object[customHrefAttr] === undefined) {
+                throw new Error(`Could not find ${customHrefAttr} in the object.`)
+            } else {
+                childElement.setAttribute('href', object[customHrefAttr]);
+            }
+        }
+
         nodeData.props = generateProps({}, childElement);
 
         nodeData.attrs = generateAttrs({}, childElement);
 
-        nodeData.class = retrieveClasses(childElement);
+        nodeData.class = retrieveClasses(childElement, object);
 
         switch (childElement.nodeName) {
             case 'INPUT': {

@@ -110,7 +110,11 @@ function generateAttrs(object: object, element: Element): Attrs {
         'stroke',
         'stroke-linecap',
         'stroke-linejoin',
-        'd'
+        'd',
+        'x1',
+        'x2',
+        'y1',
+        'y2'
     ];
 
     const expandedObject: Attrs = {};
@@ -135,15 +139,38 @@ function generateAttrs(object: object, element: Element): Attrs {
 /**
  * @description Retrieves the classes of the element in the format that snabbdom expects
  * @param element
+ * @param object
  * @returns Classes
  */
-function retrieveClasses(element: Element): Classes {
+function retrieveClasses(element: Element, object: spargoElementObject): Classes {
     const classes = element.getAttribute('class');
+    const classAttr = element.getAttribute('@class');
+    let customClasses, check = null;
 
     const classesObject: { [key: string]: boolean } = {};
 
-    if (classes) {
-        classes.split(' ')
+    if (classAttr) {
+        [check, customClasses] = classAttr.split('=>');
+
+        if (customClasses === undefined && check === undefined) {
+            throw new Error('Truth check and classes must be provided when @class is set. Please remove if not needed.');
+        } else if (check && customClasses === undefined) {
+            throw new Error(`Classes must be provided after the => for truth check ${check}`);
+        } else if (check === undefined) {
+            throw new Error('A truth check must be provided before the => in @class');
+        } else {
+            const [ifTrueClasses, ifFalseClasses] = customClasses.split('||');
+
+            if (valueTruthyInObject(check.trim(), object)) {
+                customClasses = ifTrueClasses;
+            } else {
+                customClasses = ifFalseClasses;
+            }
+        }
+    }
+
+    if (classes || customClasses) {
+        ((classes || '') + (customClasses ? ' ' + customClasses : '')).split(' ')
             .filter((classString: string) => classString.trim() !== '')
             .forEach((classString: string) => {
                 classesObject[classString] = true;
