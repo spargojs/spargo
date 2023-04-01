@@ -4,6 +4,8 @@
 
 The lightweight JavaScript framework for inserting a little reactivity into some markup.
 
+https://spargojs.dev
+
 ## Why Spargo?
 
 Spargo has many meanings: awesome, sprinkle, practicality, etc. We believe all of these represent a piece of Spargo.js; which is designed to add just a little reactivity to your otherwise boring markup.
@@ -12,7 +14,9 @@ Spargo has many meanings: awesome, sprinkle, practicality, etc. We believe all o
 
 #### NPM
 
-`npm i spargo`
+```console
+npm i spargo
+```
 
 Then just import it and create a new instance of the Spargo class.
 
@@ -23,7 +27,7 @@ Just add the CDN to the head tag. There is both a minified version (cdn.min.js) 
 ```html
 <head>
     <!-- Other Items in head tag -->
-    <script src="https://unpkg.com/spargo@1.0.9/dist/cdn.min.js" defer></script>
+    <script src="https://unpkg.com/spargo@1.0.10/dist/cdn.min.js" defer></script>
 </head>
 ```
 
@@ -35,7 +39,7 @@ Just add the CDN to the head tag. There is both a minified version (cdn.min.js) 
 
 ## Docs
 
-Docs Site Coming Soon!
+Docs are available at https://spargojs.dev.
 
 #### ignite
 
@@ -123,6 +127,40 @@ Used to add a click event to an element.
             show() {
                 this.display = true;
             },
+        }
+    }
+</script>
+```
+
+#### @class
+
+Used to conditionally add classes to an element. The syntax is: condition => classes if true || classes if false.
+
+```html
+<div ignite="home">
+     <button type="button" @class="marginTop => mt-4 || mt-0">Show</button>
+</div>
+<script nonce="someRandomNonce">
+    function home() {
+        return {
+            marginTop: true,
+        }
+    }
+</script>
+```
+
+#### @href
+
+Used to programmatically set an elements href attribute.
+
+```html
+<div ignite="home">
+    <a @href="href">Go Home</a>
+</div>
+<script nonce="someRandomNonce">
+    function home() {
+        return {
+            href: '/home',
         }
     }
 </script>
