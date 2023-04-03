@@ -23,6 +23,11 @@
             <p @text="name"></p>
             <p @text="email"></p>
         </div>
+        <div @for="_ in maybeUsers">
+            <p @text="name" @if="show" id="Jeremy"></p>
+            <p @text="short" @elseif="elseShow" id="jbla"></p>
+            <p @else id="else">Else Show Me</p>
+        </div>
     </div>
 </body>
 
@@ -47,6 +52,26 @@
                     name: 'Jim Bar',
                     email: 'jbar@example.org'
                 }
+            ],
+            maybeUsers: [
+                {
+                    name: 'Jeremy Bla',
+                    short: 'jbla',
+                    show: true,
+                    elseShow: false
+                },
+                {
+                    name: 'Jacob Bla',
+                    short: 'jbla',
+                    show: false,
+                    elseShow: true
+                },
+                {
+                    name: 'Jasper Bla',
+                    short: 'jbla',
+                    show: false,
+                    elseShow: false
+                },
             ],
             countries: [
                 'America',

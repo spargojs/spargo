@@ -10,4 +10,10 @@ describe('Test for', () => {
         cy.get('button[id=addPortugal]').click();
         cy.get('.mt-8').contains('Portugal');
     });
+
+    it('should have one Jeremy, one jbla, and one else on the page', () => {
+        cy.get('p[id="Jeremy"]').should('have.length', 1);
+        cy.get('p[id="jbla"]').should('have.length', 1);
+        cy.get('p[id="else"]').should('have.length', 1);
+    });
 })
