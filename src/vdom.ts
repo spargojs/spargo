@@ -137,10 +137,15 @@ export class Vdom {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         object[objectKey.trim()].forEach((value: string | { [key: string]: any }) => {
             const newNode = child.cloneNode(true);
+            const ifData = {
+                ifIsFalse: false,
+                elseIfIsFalse: false,
+                elseIfPresent: false
+            };
 
             newNode.childNodes.forEach((node) => {
                 if (node.nodeType === 1) { // Element
-                    this.updateLoopElement(node as Element, value, name);
+                    this.updateLoopElement(node as Element, value, name, ifData);
                 }
             });
 
@@ -148,13 +153,23 @@ export class Vdom {
         });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private updateLoopElement(node: Element, value: string | { [key: string]: any }, name: string) {
+    private updateLoopElement(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        node: Element, value: string | { [key: string]: any },
+        name: string,
+        ifData?: { ifIsFalse: boolean, elseIfIsFalse: boolean, elseIfPresent: boolean }
+    ) {
+        if (ifData && this.shouldNotIncludeCheck(node, ifData, value as spargoElementObject)) {
+            node.remove();
+        } else {
+            node.removeAttribute('@if');
+            node.removeAttribute('@elseif');
+            node.removeAttribute('@else');
+        }
+
         this.handleLoopTextAttr(node, value, name);
 
         this.handleLoopHrefAttr(node, value);
-
-        this.handleLoopIfAttr(node, value);
 
         this.handleLoopClassAttr(node, value);
 
@@ -199,19 +214,6 @@ export class Vdom {
 
             node.setAttribute('href', hrefString);
             node.removeAttribute('@href');
-        }
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private handleLoopIfAttr(node: Element, value: string | { [key: string]: any }) {
-        if (node.hasAttribute('@if')) { // Element @if
-            const ifAttr = node.getAttribute('@if') as string;
-
-            if (!valueTruthyInObject(ifAttr, value as spargoElementObject)) {
-                node.remove();
-            } else {
-                node.removeAttribute('@if');
-            }
         }
     }
 
