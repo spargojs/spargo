@@ -42,6 +42,10 @@ export class Vdom {
                     return child.textContent || '';
 
                 default:
+                    if (child.nodeName.indexOf('#') > -1) { // comments' nodeName is #comment, which is invalid
+                        return '';
+                    }
+
                     return h(
                         child.nodeName,
                         nodeData,
