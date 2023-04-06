@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-describe('Test mask', () => {
+describe('Test @mask', () => {
     beforeEach(() => {
         cy.visit(__dirname + '/spec.html')
     });

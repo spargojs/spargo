@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Security-Policy"
+        content="script-src 'nonce-jFdn249Fnwelk429Df932jS3U2' 'self' data:; default-src 'self'; style-src https://cdn.tailwindcss.com 'unsafe-inline'">
+    <title>Spargo Test</title>
+    <script src="../../../../dist/cdn.js" defer></script>
+    <script src="https://cdn.tailwindcss.com" nonce="jFdn249Fnwelk429Df932jS3U2"></script>
+</head>
+
+<body class="bg-gray-100 font-sans antialiased" ignite="home">
+    <div @text="largeName" @class="large => text-3xl || text-sm"></div>
+    <div @text="smallName" @class="!large => text-3xl || text-sm"></div>
+</body>
+
+</html>
+<script nonce="jFdn249Fnwelk429Df932jS3U2">
+    function home() {
+        return {
+            large: true,
+            largeName: 'Jon Doe',
+            smallName: 'John Foo',
+        }
+    }
+</script>
