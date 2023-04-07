@@ -512,13 +512,15 @@ export class Vdom {
         const textAttribute = childElement.getAttribute('@text');
 
         if (textAttribute) {
-            if (object[textAttribute] === undefined) {
+            const value = this.deepFind(textAttribute, object);
+
+            if (value === undefined) {
                 throw new Error(`${textAttribute} does not exist in the object.`);
             }
 
             nodeData.props = generateProps({text: textAttribute, ...nodeData.props}, childElement);
 
-            return h(childElement.nodeName, nodeData, object[textAttribute]);
+            return h(childElement.nodeName, nodeData, value);
         }
     }
 
