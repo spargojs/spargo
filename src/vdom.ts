@@ -379,7 +379,7 @@ export class Vdom {
             throw new Error(`It is expected that all input's are synced to a piece of data.`)
         }
 
-        const value = object[sync];
+        const value = this.deepFind(sync, object);
 
         if (value === undefined && !Object.getOwnPropertyDescriptor(object, sync)?.set) {
             throw new Error(`${sync} does not exist.`);
@@ -394,6 +394,8 @@ export class Vdom {
 
         const maskArgs = childElement.getAttribute('@mask-args');
 
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         return {value, sync, mask, maskArgs};
     }
 
@@ -591,9 +593,39 @@ export class Vdom {
 
                     target.value = object[childNode.data.props['sync']]; // Update the value of the target (input) to the masked value
                 } else {
-                    object[childNode.data.props['sync']] = target.value;
+                    this.deepSet(childNode.data.props['sync'], object, target.value);
                 }
             }
         });
+    }
+
+    private deepFind(path: string, data: object) : string | undefined {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        return path.split('.').reduce((ob,i)=> ob?.[i], data)
+    }
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    private deepSet(path: string | Array<string>, data: object, value: string | number) {
+        if (typeof path === "string") {
+            return this.deepSet(path.split("."), data, value);
+        }
+
+        if (path.length <= 1) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            data[path[0]] = value;
+
+            return data;
+        }
+
+        const key = path[0];
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        data[key] = this.deepSet(path.slice(1), data[key] ? data[key] : {}, value);
+
+        return data;
     }
 }
