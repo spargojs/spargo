@@ -599,12 +599,25 @@ export class Vdom {
         });
     }
 
-    private deepFind(path: string, data: object) : string | undefined {
+    /**
+     * @description Will attempt to find a value within an object by dot notation
+     * @returns string | undefined
+     * @param path
+     * @param data
+     */
+    private deepFind(path: string, data: object): string | undefined {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        return path.split('.').reduce((ob,i)=> ob?.[i], data)
+        return path.split('.').reduce((ob, i) => ob?.[i], data)
     }
 
+    /**
+     * @description Will attempt to set a value within an object by dot notation
+     * @returns any
+     * @param path
+     * @param data
+     * @param value
+     */
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     private deepSet(path: string | Array<string>, data: object, value: string | number) {
