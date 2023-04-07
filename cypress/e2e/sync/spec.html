@@ -35,6 +35,17 @@
                     name="latin" placeholder="Latin" @sync="latin" />
             </div>
         </div>
+        <div>
+            <div class="relative mb-3 xl:w-96">
+                <label for="latin" class="text-gray-700">
+                    Deep
+                </label>
+                <input type="text" id="deep"
+                       class="rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-stone-600 focus:border-transparent"
+                       name="deep" placeholder="Deep" @sync="deep.bars.value" />
+                <div id="divDeep" @text="deep.bars.value"></div>
+            </div>
+        </div>
     </div>
 </body>
 
@@ -43,7 +54,12 @@
     function home() {
         return {
             message: 'hello world',
-            latin: 'dum spiro spero'
+            latin: 'dum spiro spero',
+            deep: {
+                bars: {
+                    value: null
+                }
+            }
         }
     }
 </script>

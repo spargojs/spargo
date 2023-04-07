@@ -11,4 +11,9 @@ describe('Test @sync', () => {
     it('latin synced input should have dum spiro spero as the value', () => {
         cy.get('input[id=latin]').should('have.value', 'dum spiro spero')
     });
+
+    it('use dot notation to set a deeply nested value', () => {
+        cy.get('input[id=deep]').clear().type('foo bar');
+        cy.get('div[id=divDeep]').should('have.text', 'foo bar');
+    });
 })
