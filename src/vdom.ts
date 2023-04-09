@@ -67,7 +67,7 @@ export class Vdom {
             const forCheck = child.getAttribute('@for');
 
             if (forCheck) {
-                const [name, objectKey] = forCheck.split('in');
+                const [name, objectKey] = forCheck.trim().split('in');
 
                 if (object[objectKey.trim()] === undefined) {
                     throw new Error(`${objectKey.trim()} does not exist in the object.`)
@@ -190,7 +190,7 @@ export class Vdom {
             if (text) {
                 if (name.trim() === '_') { // ? This means that the values will be dot notated
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (node as any).innerText = (value as { [key: string]: any })[text];
+                    (node as any).innerText = (value as { [key: string]: any })[text.trim()];
                 } else { // ? The values should just be the name
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (node as any).innerText = value;
@@ -206,7 +206,7 @@ export class Vdom {
         if (node.hasAttribute('@href')) { // Element @href
             const hrefAttr = node.getAttribute('@href') as string;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const hrefString: string = (value as any)[hrefAttr];
+            const hrefString: string = (value as any)[hrefAttr.trim()];
 
             if (hrefString === undefined) {
                 throw new Error(`${hrefAttr} not found in this iteration.`);
@@ -225,7 +225,7 @@ export class Vdom {
             let customClasses, check;
 
             // eslint-disable-next-line prefer-const
-            [check, customClasses] = classAttr.split('=>');
+            [check, customClasses] = classAttr.trim().split('=>');
 
             if (customClasses === undefined && check === undefined) {
                 throw new Error('Truth check and classes must be provided when @class is set. Please remove if not needed.');
@@ -234,7 +234,7 @@ export class Vdom {
             } else if (check === undefined) {
                 throw new Error('A truth check must be provided before the => in @class');
             } else {
-                const [ifTrueClasses, ifFalseClasses] = customClasses.split('||');
+                const [ifTrueClasses, ifFalseClasses] = customClasses.trim().split('||');
 
                 if (valueTruthyInObject(check.trim(), value as spargoElementObject)) {
                     customClasses = ifTrueClasses;
@@ -277,10 +277,10 @@ export class Vdom {
         const customHrefAttr = childElement.getAttribute('@href');
 
         if (customHrefAttr) {
-            if (object[customHrefAttr] === undefined) {
-                throw new Error(`Could not find ${customHrefAttr} in the object.`)
+            if (object[customHrefAttr.trim()] === undefined) {
+                throw new Error(`Could not find ${customHrefAttr.trim()} in the object.`)
             } else {
-                childElement.setAttribute('href', object[customHrefAttr]);
+                childElement.setAttribute('href', object[customHrefAttr.trim()]);
             }
         }
 
@@ -291,6 +291,7 @@ export class Vdom {
         nodeData.class = retrieveClasses(childElement, object);
 
         switch (childElement.nodeName) {
+            case 'TEXTAREA':
             case 'INPUT': {
                 const props = this.generateInputProps(childElement, object);
 
@@ -327,13 +328,13 @@ export class Vdom {
         const click = childElement.getAttribute('@click');
 
         if (click) {
-            const method = object[click];
+            const method = object[click.trim()];
 
             if (typeof method !== 'function') {
-                const methodWithParens = object[click.slice(0, -2)];
+                const methodWithParens = object[click.trim().slice(0, -2)];
 
                 if (typeof methodWithParens !== 'function') {
-                    throw new Error(`${click} was not found as a method`);
+                    throw new Error(`${click.trim()} was not found as a method`);
                 }
             }
 
@@ -348,7 +349,7 @@ export class Vdom {
                         element.id === this.findSpargoParentNodeLocalName(target.parentNode));
 
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (this.elements[index] as any).object[method ? click : click.slice(0, -2)]();
+                    (this.elements[index] as any).object[method ? click.trim() : click.trim().slice(0, -2)]();
                 }
             };
 
@@ -379,17 +380,17 @@ export class Vdom {
             throw new Error(`It is expected that all input's are synced to a piece of data.`)
         }
 
-        const value = this.deepFind(sync, object);
+        const value = this.deepFind(sync.trim(), object);
 
-        if (value === undefined && !Object.getOwnPropertyDescriptor(object, sync)?.set) {
+        if (value === undefined && !Object.getOwnPropertyDescriptor(object, sync.trim())?.set) {
             throw new Error(`${sync} does not exist.`);
         }
 
         const mask = childElement.getAttribute('@mask');
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (mask && (masks as any)[mask] === undefined) {
-            throw new Error(`The @mask ${mask} does not exist.`);
+        if (mask && (masks as any)[mask.trim()] === undefined) {
+            throw new Error(`The @mask ${mask.trim()} does not exist.`);
         }
 
         const maskArgs = childElement.getAttribute('@mask-args');
@@ -413,7 +414,7 @@ export class Vdom {
     ): boolean {
         const ifCheck = childElement.getAttribute('@if');
 
-        if (ifCheck && !valueTruthyInObject(ifCheck, object)) {
+        if (ifCheck && !valueTruthyInObject(ifCheck.trim(), object)) {
             ifData.ifIsFalse = true;
 
             return true;
@@ -512,13 +513,13 @@ export class Vdom {
         const textAttribute = childElement.getAttribute('@text');
 
         if (textAttribute) {
-            const value = this.deepFind(textAttribute, object);
+            const value = this.deepFind(textAttribute.trim(), object);
 
             if (value === undefined) {
-                throw new Error(`${textAttribute} does not exist in the object.`);
+                throw new Error(`${textAttribute.trim()} does not exist in the object.`);
             }
 
-            nodeData.props = generateProps({text: textAttribute, ...nodeData.props}, childElement);
+            nodeData.props = generateProps({text: textAttribute.trim(), ...nodeData.props}, childElement);
 
             return h(childElement.nodeName, nodeData, value);
         }
