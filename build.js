@@ -1,21 +1,23 @@
 /* eslint-disable no-undef */
 /* eslint-disable @typescript-eslint/no-var-requires */
 const {Generator} = require('npm-dts');
-const {readdir, unlink} = require("fs");
+const {readdir, unlink, existsSync} = require("fs");
 const {join} = require("path");
 
 async function runBuilds() {
     const directory = "dist";
 
-    readdir(directory, (err, files) => {
-        if (err) throw err;
+    if (existsSync(directory)) {
+        readdir(directory, (err, files) => {
+            if (err) throw err;
 
-        for (const file of files) {
-            unlink(join(directory, file), (err) => {
-                if (err) throw err;
-            });
-        }
-    });
+            for (const file of files) {
+                unlink(join(directory, file), (err) => {
+                    if (err) throw err;
+                });
+            }
+        });
+    }
 
 
     const drop = ['debugger'];
