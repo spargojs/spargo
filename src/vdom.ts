@@ -373,6 +373,7 @@ export class Vdom {
         sync: string | null,
         mask: string | null,
         maskArgs: string | null,
+        checked?: string | null,
     } {
         const sync = childElement.getAttribute('@sync');
 
@@ -395,9 +396,17 @@ export class Vdom {
 
         const maskArgs = childElement.getAttribute('@mask-args');
 
+        const checked: { checked?: string | null } = {};
+
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        return {value, sync, mask, maskArgs};
+        if (childElement.type && childElement.type === 'checkbox') {
+            checked.checked = value;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        return {value, sync, mask, maskArgs, ...checked};
     }
 
     /**
@@ -596,7 +605,11 @@ export class Vdom {
 
                     target.value = object[childNode.data.props['sync']]; // Update the value of the target (input) to the masked value
                 } else {
-                    this.deepSet(childNode.data.props['sync'], object, target.value);
+                    if (target.type === 'checkbox') {
+                        this.deepSet(childNode.data.props['sync'], object, target.checked);
+                    } else {
+                        this.deepSet(childNode.data.props['sync'], object, target.value);
+                    }
                 }
             }
         });
