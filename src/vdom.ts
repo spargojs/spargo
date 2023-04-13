@@ -293,14 +293,26 @@ export class Vdom {
         switch (childElement.nodeName) {
             case 'TEXTAREA':
             case 'INPUT': {
-                const props = this.generateInputProps(childElement, object);
+                const inputProps = this.generateInputProps(childElement, object);
 
                 const updateState = (e: Event) => {
                     this.updateState(e)
                 };
 
-                nodeData.props = generateProps({...props, ...nodeData.props}, childElement);
+                nodeData.props = generateProps({...inputProps, ...nodeData.props}, childElement);
                 nodeData.on = {input: updateState};
+
+                return this.generateVNode(child, childElement, object, nodeData);
+            }
+            case 'SELECT': {
+                const inputProps = this.generateInputProps(childElement, object);
+
+                const updateState = (e: Event) => {
+                    this.updateState(e)
+                };
+
+                nodeData.props = generateProps({...inputProps, ...nodeData.props}, childElement);
+                nodeData.on = {change: updateState};
 
                 return this.generateVNode(child, childElement, object, nodeData);
             }
@@ -381,10 +393,21 @@ export class Vdom {
             throw new Error(`It is expected that all input's are synced to a piece of data.`)
         }
 
-        const value = this.deepFind(sync.trim(), object);
+        let value = this.deepFind(sync.trim(), object);
 
         if (value === undefined && !Object.getOwnPropertyDescriptor(object, sync.trim())?.set) {
             throw new Error(`${sync} does not exist.`);
+        }
+
+        if (value && childElement.nodeName === 'SELECT' && childElement.children && childElement.children.length > 0) {
+            Array.from(childElement.children).forEach((child: Element) => {
+                if (
+                    (child.hasAttribute('value') && value === child.getAttribute('value'))
+                    || child.textContent?.trim() === value
+                ) {
+                    child.setAttribute('selected', '');
+                }
+            });
         }
 
         const mask = childElement.getAttribute('@mask');
@@ -402,6 +425,17 @@ export class Vdom {
         // @ts-ignore
         if (childElement.type && childElement.type === 'checkbox') {
             checked.checked = value;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        if (childElement.hasAttribute('value') && childElement.type && childElement.type === 'radio') {
+            // If the current value already matches what is in state, mark as checked
+            if (value === childElement.getAttribute('value')) {
+                checked.checked = value;
+            }
+
+            value = childElement.getAttribute('value') as string;
         }
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -611,6 +645,13 @@ export class Vdom {
                         this.deepSet(childNode.data.props['sync'], object, target.value);
                     }
                 }
+                // @sync only exists on the parent select node (this case target),
+                // so we have to set the select value here.
+                // It should be reflected that this will cause an update to state
+                // and the dom for each option - far from ideal. There will have
+                // to be a bit of a rework to make this better.
+            } else if (target.nodeName === 'SELECT') {
+                this.deepSet(target.sync, object, target.value);
             }
         });
     }
