@@ -685,14 +685,13 @@ export class Vdom {
                     const currentValue = this.deepFind(target.sync, object) as string[];
 
                     values = currentValue.concat(values);
-
-                    console.warn(values);
                 }
 
                 if (targetIsMultiple && values.length !== 0) {
                     this.deepSet(target.sync, object, values);
                 } else if (!targetIsMultiple) {
                     this.deepSet(target.sync, object, target.value);
+
                 }
             }
         });
