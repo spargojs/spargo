@@ -79,7 +79,8 @@ function generateProps(object: object, element: Element): Props {
         'content',
         'contenteditable',
         'disabled',
-        'draggable'
+        'draggable',
+        'multiple'
     ];
 
     const expandedObject: Props = {};
@@ -114,7 +115,9 @@ function generateAttrs(object: object, element: Element): Attrs {
         'x1',
         'x2',
         'y1',
-        'y2'
+        'y2',
+        'selected',
+        'checked'
     ];
 
     const expandedObject: Attrs = {};

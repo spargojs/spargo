@@ -401,11 +401,26 @@ export class Vdom {
 
         if (value && childElement.nodeName === 'SELECT' && childElement.children && childElement.children.length > 0) {
             Array.from(childElement.children).forEach((child: Element) => {
-                if (
-                    (child.hasAttribute('value') && value === child.getAttribute('value'))
-                    || child.textContent?.trim() === value
-                ) {
-                    child.setAttribute('selected', '');
+                if (childElement.hasAttribute('multiple')) {
+                    const valueArray = value as [];
+
+                    valueArray.forEach(
+                        (value) => {
+                            if (
+                                (child.hasAttribute('value') && value === child.getAttribute('value'))
+                                || child.textContent?.trim() === value
+                            ) {
+                                child.setAttribute('selected', '');
+                            }
+                        }
+                    );
+                } else {
+                    if (
+                        (child.hasAttribute('value') && value === child.getAttribute('value'))
+                        || child.textContent?.trim() === value
+                    ) {
+                        child.setAttribute('selected', '');
+                    }
                 }
             });
         }
@@ -651,7 +666,34 @@ export class Vdom {
                 // and the dom for each option - far from ideal. There will have
                 // to be a bit of a rework to make this better.
             } else if (target.nodeName === 'SELECT') {
-                this.deepSet(target.sync, object, target.value);
+                // Check if target has multiple entered
+                const targetIsMultiple = target.hasAttribute('multiple');
+
+                let values: string[] = [];
+
+                if (targetIsMultiple) {
+                    const selectedElements: HTMLOptionElement[] = Array.from(target.selectedOptions);
+
+                    selectedElements.forEach(
+                        (element) => {
+                            if (!(values.includes(element.value))) {
+                                values.push(element.value);
+                            }
+                        }
+                    );
+
+                    const currentValue = this.deepFind(target.sync, object) as string[];
+
+                    values = currentValue.concat(values);
+
+                    console.warn(values);
+                }
+
+                if (targetIsMultiple && values.length !== 0) {
+                    this.deepSet(target.sync, object, values);
+                } else if (!targetIsMultiple) {
+                    this.deepSet(target.sync, object, target.value);
+                }
             }
         });
     }
@@ -662,7 +704,7 @@ export class Vdom {
      * @param path
      * @param data
      */
-    private deepFind(path: string, data: object): string | undefined {
+    private deepFind(path: string, data: object): string | [] | undefined {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         return path.split('.').reduce((ob, i) => ob?.[i], data)
@@ -677,7 +719,7 @@ export class Vdom {
      */
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    private deepSet(path: string | Array<string>, data: object, value: string | number) {
+    private deepSet(path: string | Array<string>, data: object, value: string | number | array) {
         if (typeof path === "string") {
             return this.deepSet(path.split("."), data, value);
         }
